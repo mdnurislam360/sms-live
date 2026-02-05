@@ -1,144 +1,68 @@
-<!DOCTYPE html>
-<html lang="bn">
+<html>
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SMS Live Chat</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* FULL SCREEN BODY */
-body{
-    background:#e5ddd5;
-    height:100vh;
-}
-
-/* FULL SCREEN CHAT */
-.chat-container{
-    width:100%;
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-}
-
-/* HEADER */
-.chat-header{
-    background:#075e54;
-    color:white;
-    padding:18px;
-    text-align:center;
-    font-size:20px;
-    font-weight:bold;
-}
-
-/* MESSAGE AREA */
-.chat-messages{
-    flex:1;
-    padding:15px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-
-/* MESSAGE STYLE */
-.message{
-    padding:10px 14px;
-    border-radius:15px;
-    max-width:75%;
-    font-size:15px;
-    word-wrap:break-word;
-}
-
-/* RECEIVED */
-.received{
-    background:white;
-    align-self:flex-start;
-}
-
-/* SENT */
-.sent{
-    background:#dcf8c6;
-    align-self:flex-end;
-}
-
-/* INPUT AREA */
-.chat-input{
-    display:flex;
-    padding:10px;
-    background:white;
-    border-top:1px solid #ccc;
-}
-
-/* INPUT */
-.chat-input input{
-    flex:1;
-    padding:12px;
-    border-radius:25px;
-    border:1px solid #ddd;
-    outline:none;
-    font-size:14px;
-}
-
-/* SEND BUTTON */
-.chat-input button{
-    margin-left:8px;
-    width:45px;
-    height:45px;
-    border:none;
-    border-radius:50%;
-    background:#075e54;
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-}
-</style>
+    <style>
+        #root {
+            width: 100vw;
+            height: 100vh;
+            }
+    </style>
 </head>
 
+
 <body>
-
-<div class="chat-container">
-
-    <div class="chat-header">
-        SMS Live Chat
-    </div>
-
-    <div class="chat-messages" id="chat-box">
-        <div class="message received">আমি আপনারকে কিছু জিজ্ঞেস করতে পারি।</div>
-        <div class="message received">হ্যালো ওয়ার্ল্ড</div>
-    </div>
-
-    <div class="chat-input">
-        <input type="text" id="msg-input" placeholder="এখানে লিখুন...">
-        <button onclick="sendMessage()">➤</button>
-    </div>
-
-</div>
-
+    <div id="root"></div>
+</body>
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 <script>
-function sendMessage(){
-    const input = document.getElementById('msg-input');
-    const chatBox = document.getElementById('chat-box');
-
-    if(input.value.trim() !== ""){
-        const newMsg = document.createElement('div');
-        newMsg.className = "message sent";
-        newMsg.innerText = input.value;
-
-        chatBox.appendChild(newMsg);
-
-        input.value="";
-        chatBox.scrollTop = chatBox.scrollHeight;
+window.onload = function () {
+    function getUrlParams(url) {
+        let urlStr = url.split('?')[1];
+        const urlSearchParams = new URLSearchParams(urlStr);
+        const result = Object.fromEntries(urlSearchParams.entries());
+        return result;
     }
+
+
+        // Generate a Token by calling a method.
+        // @param 1: appID
+        // @param 2: serverSecret
+        // @param 3: Room ID
+        // @param 4: User ID
+        // @param 5: Username
+    const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
+    const userID = Math.floor(Math.random() * 10000) + "";
+    const userName = "userName" + userID;
+    const appID = 292102507;
+    const serverSecret = "bc2d4c1544dbd685c5fccd5b9007e80f";
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+    
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            sharedLinks: [{
+                name: 'Personal link',
+                url: window.location.protocol + '//' + window.location.host  + window.location.pathname + '?roomID=' + roomID,
+            }],
+            scenario: {
+                mode: ZegoUIKitPrebuilt.VideoConference,
+            },
+                
+           	turnOnMicrophoneWhenJoining: true,
+           	turnOnCameraWhenJoining: true,
+           	showMyCameraToggleButton: true,
+           	showMyMicrophoneToggleButton: true,
+           	showAudioVideoSettingsButton: true,
+           	showScreenSharingButton: true,
+           	showTextChat: true,
+           	showUserList: true,
+           	maxUsers: 2,
+           	layout: "Auto",
+           	showLayoutButton: false,
+         
+            });
 }
 </script>
 
-</body>
 </html>
