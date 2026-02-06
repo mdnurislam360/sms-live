@@ -3,50 +3,90 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>HE Live Room</title>
+    <title>HE Live</title>
 
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: #000;
+            background: #0f172a;
+            font-family: Arial, sans-serif;
         }
 
+        /* Zego container full screen */
         #root {
             width: 100vw;
             height: 100vh;
         }
+
+        /* =========================
+           ✨ Top Right Floating Icon
+        ========================== */
+        #aiBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+
+            width: 55px;
+            height: 55px;
+
+            background: white;
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 26px;
+            cursor: pointer;
+
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+            z-index: 9999;
+        }
+
+        #aiBtn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 
+
 <body>
 
+    <!-- Zego Live View -->
     <div id="root"></div>
 
-    <!-- ZegoCloud SDK -->
+    <!-- ✨ Floating Button -->
+    <div id="aiBtn">✨</div>
+
+
+    <!-- Zego SDK -->
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
     <script>
+
+        /* =========================
+           Get URL Params
+        ========================== */
         function getUrlParams(url) {
             let urlStr = url.split('?')[1];
             const urlSearchParams = new URLSearchParams(urlStr);
             return Object.fromEntries(urlSearchParams.entries());
         }
 
-        // ==============================
-        // 🔥 YOUR ZEGO INFO
-        // ==============================
-
+        /* =========================
+           🔥 YOUR ZEGO INFO
+        ========================== */
         const appID = 480055648;
         const serverSecret = "a341f27a11c9af1547c670c09b6df111";
+        /* ========================= */
 
-        // ==============================
 
         const urlParams = getUrlParams(window.location.href);
 
-        const roomID = urlParams.roomID || "HE_LIVE_ROOM_01";
-
+        const roomID = urlParams.roomID || "HE_LIVE_ROOM";
         const userID = "user_" + Math.floor(Math.random() * 10000);
         const userName = "HE_User_" + userID;
 
@@ -58,20 +98,22 @@
             userName
         );
 
-        // Host / Audience
-        let role = urlParams.role || 'Host';
-        role = role === 'Host'
+        // Host / Audience role
+        let role = urlParams.role || "Host";
+        role = role === "Host"
             ? ZegoUIKitPrebuilt.Host
             : ZegoUIKitPrebuilt.Audience;
 
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
         zp.joinRoom({
+
             container: document.querySelector("#root"),
 
-            // ✅ Hide PreJoin Page (তোমার request)
+            /* ✅ Hide PreJoin */
             showPreJoinView: false,
 
+            /* UI Options */
             maxUsers: 20,
             layout: "Auto",
 
@@ -79,8 +121,6 @@
             showUserList: true,
             showRoomTimer: true,
             showScreenSharingButton: true,
-            showMyCameraToggleButton: true,
-            showMyMicrophoneToggleButton: true,
 
             turnOnCameraWhenJoining: true,
             turnOnMicrophoneWhenJoining: true,
@@ -102,18 +142,18 @@
                     "&role=Audience",
             }],
 
-            branding: {
-                logoURL: ""
-            },
+            onJoinRoom: () => console.log("Joined"),
+            onLeaveRoom: () => console.log("Left")
 
-            onJoinRoom: () => {
-                console.log("Joined Room");
-            },
-
-            onLeaveRoom: () => {
-                console.log("Left Room");
-            }
         });
+
+
+        /* =========================
+           ✨ Floating Button Click
+        ========================== */
+        document.getElementById("aiBtn").onclick = function () {
+            alert("HE Live AI Button Clicked 😄");
+        };
 
     </script>
 
