@@ -1,18 +1,20 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #root {
             width: 100vw;
             height: 100vh;
-            }
+        }
     </style>
 </head>
-
 
 <body>
     <div id="root"></div>
 </body>
+
 <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 <script>
 window.onload = function () {
@@ -25,34 +27,31 @@ window.onload = function () {
 
     const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
     const userID = Math.floor(Math.random() * 10000) + "";
-    const userName = "userName" + userID;
-    const appID = 292102507;
+    const userName = "User_" + userID;
+    const appID = 292102507; 
     const serverSecret = "bc2d4c1544dbd685c5fccd5b9007e80f";
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
 
-    
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-        zp.joinRoom({
-            container: document.querySelector("#root"),
-            // এখানে sharedLinks অংশটি সরিয়ে দেওয়া হয়েছে যাতে লিঙ্কটি আর না দেখায়
-            sharedLinks: [], 
-            scenario: {
-                mode: ZegoUIKitPrebuilt.VideoConference,
-            },
-                
-           	turnOnMicrophoneWhenJoining: true,
-           	turnOnCameraWhenJoining: true,
-           	showMyCameraToggleButton: true,
-           	showMyMicrophoneToggleButton: true,
-           	showAudioVideoSettingsButton: true,
-           	showScreenSharingButton: true,
-           	showTextChat: true,
-           	showUserList: true,
-           	maxUsers: 2,
-           	layout: "Auto",
-           	showLayoutButton: false,
-         
-            });
+    const zp = ZegoUIKitPrebuilt.create(kitToken);
+    zp.joinRoom({
+        container: document.querySelector("#root"),
+        showPreJoinView: true, 
+        sharedLinks: [], 
+        scenario: {
+            mode: ZegoUIKitPrebuilt.VideoConference,
+        },
+        turnOnMicrophoneWhenJoining: true,
+        turnOnCameraWhenJoining: true,
+        showMyCameraToggleButton: true,
+        showMyMicrophoneToggleButton: true,
+        showAudioVideoSettingsButton: true,
+        showScreenSharingButton: true,
+        showTextChat: true,
+        showUserList: true,
+        maxUsers: 2,
+        layout: "Auto",
+        showLayoutButton: false,
+    });
 }
 </script>
 
