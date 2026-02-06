@@ -2,8 +2,9 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>HE Live Pro - Modified</title>
+    <title>HE Live Pro</title>
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -13,7 +14,10 @@
             background: black;
             color: white;
         }
-        #root { width: 100vw; height: 100vh; }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
 
         /* Floating Buttons */
         .fab {
@@ -26,51 +30,48 @@
             justify-content: center;
             font-size: 28px;
             cursor: pointer;
-            z-index: 10000;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             transition: transform 0.2s;
         }
-        .fab:hover { transform: scale(1.1); }
+        .fab:hover {
+            transform: scale(1.1);
+        }
 
-        #aiBtn    { top: 20px; right: 20px; background: #ffffff; color: #000; }
-        #giftBtn  { bottom: 100px; right: 20px; background: #ff3366; color: white; }
-        #followBtn{ bottom: 180px; right: 20px; background: #00cc66; color: white; }
+        #aiBtn {
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: black;
+        }
+
+        #giftBtn {
+            bottom: 140px;
+            right: 20px;
+            background: #ff4d6d;
+            color: white;
+        }
+
+        #followBtn {
+            bottom: 220px;
+            right: 20px;
+            background: #00c853;
+            color: white;
+        }
 
         /* Coin Box */
         #coinBox {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.6);
             color: #ffd700;
             padding: 10px 18px;
             border-radius: 30px;
             font-size: 18px;
             font-weight: bold;
-            z-index: 10000;
-            border: 1px solid #ffd70044;
-        }
-
-        /* Gift Animation */
-        #giftAnimation {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 120px;
-            pointer-events: none;
             z-index: 9999;
-            opacity: 0;
-            transition: all 1.2s ease-out;
-        }
-        .gift-fly {
-            animation: flyUp 1.5s forwards;
-        }
-        @keyframes flyUp {
-            0%   { opacity: 0; transform: translate(-50%, 100px) scale(0.5); }
-            20%  { opacity: 1; transform: translate(-50%, -20px) scale(1.3); }
-            100% { opacity: 0; transform: translate(-50%, -300px) scale(1.8); }
+            border: 1px solid #ffd70033;
         }
 
         /* Bottom Bar */
@@ -78,14 +79,15 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            height: 70px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(12px);
+            height: 80px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
         }
+
         #liveBtn {
             background: #ff0000;
             color: white;
@@ -93,7 +95,8 @@
             border-radius: 50px;
             font-size: 20px;
             font-weight: bold;
-            box-shadow: 0 0 20px #ff000088;
+            cursor: pointer;
+            box-shadow: 0 0 15px #ff000066;
         }
     </style>
 </head>
@@ -105,12 +108,9 @@
     <div id="coinBox">🪙 1000</div>
 
     <!-- Floating Buttons -->
-    <div id="aiBtn"    class="fab">✨</div>
-    <div id="giftBtn"  class="fab">🎁</div>
-    <div id="followBtn" class="fab"> follow ❤️</div>
-
-    <!-- Gift Animation Layer -->
-    <div id="giftAnimation"></div>
+    <div id="aiBtn" class="fab">✨</div>
+    <div id="giftBtn" class="fab">🎁</div>
+    <div id="followBtn" class="fab">❤️</div>
 
     <!-- Bottom Bar -->
     <div id="bottomBar">
@@ -118,15 +118,20 @@
     </div>
 
 <script>
-    // ================= ZEGO CONFIG =================
+    // ================= ZEGO LIVE CONFIG =================
     const appID = 480055648;
     const serverSecret = "a341f27a11c9af1547c670c09b6df111";
-    const roomID = "HE_LIVE_ROOM_" + Date.now(); // unique room each time (optional)
-    const userID = "user_" + Math.floor(Math.random() * 100000);
+
+    const roomID = "HE_LIVE_ROOM";
+    const userID = "user_" + Math.floor(Math.random() * 10000);
     const userName = "HE_User";
 
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID, serverSecret, roomID, userID, userName
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
     );
 
     const zp = ZegoUIKitPrebuilt.create(kitToken);
@@ -136,92 +141,53 @@
         showPreJoinView: false,
         scenario: {
             mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: { role: ZegoUIKitPrebuilt.Host }
+            config: {
+                role: ZegoUIKitPrebuilt.Host
+            }
         },
         showTextChat: true,
         showUserList: true,
-        showScreenSharingButton: true,
-        // chat এ গিফট মেসেজ দেখানোর জন্য notification ব্যবহার করা যায়
-        onIMMessageReceived: (msgs) => {
-            // ভবিষ্যতে গিফট নোটিফিকেশন দেখাতে পারবে
-        }
+        showScreenSharingButton: true
     });
 
     // ================= COIN + GIFT SYSTEM =================
     let coins = 1000;
     const coinBox = document.getElementById("coinBox");
-    const giftAnim = document.getElementById("giftAnimation");
 
     function updateCoins() {
-        coinBox.innerHTML = `🪙 ${coins}`;
+        coinBox.innerHTML = "🪙 " + coins;
     }
 
-    // Simple gift types
-    const gifts = [
-        { name: "Rose", emoji: "🌹", cost: 50 },
-        { name: "Heart", emoji: "❤️", cost: 100 },
-        { name: "Rocket", emoji: "🚀", cost: 300 },
-        { name: "Crown", emoji: "👑", cost: 800 }
-    ];
-
-    // Gift button click → show simple selection (এখানে alert দিয়ে, পরে modal বানাতে পারো)
+    // Gift button - fixed 100 coins per gift
     document.getElementById("giftBtn").onclick = () => {
-        // সিম্পল prompt দিয়ে গিফট সিলেক্ট (real app এ modal/UI বানাবে)
-        const choice = prompt("Select gift:\n1. Rose (50)\n2. Heart (100)\n3. Rocket (300)\n4. Crown (800)\nEnter number:", "2");
-
-        if (!choice) return;
-        const index = parseInt(choice) - 1;
-        if (index < 0 || index >= gifts.length) {
-            alert("Invalid choice!");
-            return;
-        }
-
-        const selectedGift = gifts[index];
-
-        if (coins >= selectedGift.cost) {
-            coins -= selectedGift.cost;
+        if (coins >= 100) {
+            coins -= 100;
             updateCoins();
-
-            // Send to chat (Zego IM দিয়ে)
-            zp.sendCustomMessage({
-                type: "gift",
-                data: {
-                    giftName: selectedGift.name,
-                    emoji: selectedGift.emoji,
-                    sender: userName
-                }
-            }).then(() => {
-                // Animation
-                giftAnim.innerHTML = selectedGift.emoji;
-                giftAnim.classList.add("gift-fly");
-                setTimeout(() => {
-                    giftAnim.classList.remove("gift-fly");
-                    giftAnim.innerHTML = "";
-                }, 1500);
-
-                alert(`🎁 \( {selectedGift.name} sent! - \){selectedGift.cost} coins`);
-            });
+            alert("🎁 Gift Sent! -100 coins");
+            // চাইলে এখানে Zego chat-এ মেসেজ পাঠাতে পারো, কিন্তু এখন সিম্পল রাখলাম
         } else {
-            alert("❌ Not enough coins! Need " + selectedGift.cost);
+            alert("❌ Not enough coins! You need at least 100 coins.");
         }
     };
 
     // Follow button
     document.getElementById("followBtn").onclick = () => {
-        alert("❤️ You followed the Host!");
+        alert("❤️ You followed the host!");
     };
 
-    // AI button (future)
+    // AI button (placeholder)
     document.getElementById("aiBtn").onclick = () => {
-        alert("✨ AI Assistant Coming Soon...");
+        alert("✨ AI Assistant - Coming Soon");
     };
 
-    // Live button
+    // Live button (already live)
     document.getElementById("liveBtn").onclick = () => {
-        alert("🔴 You are LIVE now!");
+        alert("🔴 You are already LIVE!");
     };
 
-    updateCoins(); // initial
+    // Initial update
+    updateCoins();
+
 </script>
 </body>
 </html>
