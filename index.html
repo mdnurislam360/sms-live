@@ -1,25 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Streaming App</title>
+    <title>Live Video Chat - Like Bigo Live</title>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
         #root {
             width: 100vw;
             height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Vibrant gradient like Bigo Live */
+        }
+        /* Custom overlay for chat and controls to make it look modern */
+        .zego-chat-overlay {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+        /* Footer toolbar styling */
+        .zego-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .zego-button {
+            background: #ff4b2b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .zego-button:hover {
+            background: #ff416c;
+        }
+        /* User list styling */
+        .zego-user-list {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* Add gift button simulation (custom for Bigo-like feel) */
+        #gift-button {
+            background: url('https://example.com/gift-icon.png') no-repeat center; /* Replace with actual icon URL */
+            width: 50px;
+            height: 50px;
+        }
+        /* Loading spinner */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
         }
     </style>
 </head>
-
 <body>
-    <div id="root"></div>
-</body>
-
-<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-<script>
-    window.onload = function () {
+    <div id="root">
+        <div class="loading">Loading Live Chat...</div>
+    </div>
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script>
         function getUrlParams(url) {
             let urlStr = url.split('?')[1];
             const urlSearchParams = new URLSearchParams(urlStr);
@@ -27,68 +98,139 @@
             return result;
         }
 
-        // URL থেকে roomID সংগ্রহ করা অথবা র‍্যান্ডম জেনারেট করা
-        const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
+        // Set up parameters
+        const params = getUrlParams(window.location.href);
+        const roomID = params['roomID'] || 'defaultLiveRoom'; // Default room if not provided
         const userID = Math.floor(Math.random() * 10000) + "";
-        const userName = "User_" + userID;
+        const userName = "userName" + userID;
+        const appID = 480055648;
+        const serverSecret = "a341f27a11c9af1547c670c09b6df111"; // From provided info
 
-        // আপনার দেওয়া ক্রিডেনশিয়ালস
-        const appID = 1772319407; // আপনার আগের চ্যাটে দেওয়া আইডি অনুযায়ী আপডেট করা হয়েছে
-        const serverSecret = "a341f27a11c9af1547c670c09b6df111";
-        
+        // Generate Kit Token
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
 
-        // ইউজার রোল সেটআপ (Host অথবা Audience)
-        let role = getUrlParams(window.location.href)['role'] || 'Host';
-        const scenarioRole = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
+        // Determine role based on URL params
+        let role = params['role'] || 'Host';
+        role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
+        // Create Zego instance
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-        // ZegoCloudRoomConfig অনুযায়ী পূর্ণাঙ্গ কনফিগারেশন
+        // Join room with full configuration for a Bigo-like experience
         zp.joinRoom({
             container: document.querySelector("#root"),
-            
-            // ১. জয়েন করার আগের সেটিংস
-            showPreJoinView: true,
-            preJoinViewConfig: {
-                title: "Ready to Go Live?",
+            showPreJoinView: false, // Hide prejoin view as per example
+            maxUsers: 20, // Allow up to 20 users
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: {
+                    role,
+                },
+            },
+            console: "VERBOSE", // For debugging
+            screenSharingConfig: {
+                resolution: "1080p",
+                width: 1920,
+                height: 1080,
+                frameRate: 30,
+                maxBitRate: 3000,
+            },
+            language: "EN", // English by default
+            sendMessageChannel: "ZIM", // Use ZIM for messaging
+            videoScreenConfig: {
+                objectFit: "cover",
+                localMirror: true,
+                pullStreamMirror: false,
             },
             turnOnMicrophoneWhenJoining: true,
             turnOnCameraWhenJoining: true,
             useFrontFacingCamera: true,
-
-            // ২. ইন্টারফেস সেটিংস (UI Controls)
+            videoResolutionDefault: "1080p",
+            enableStereo: true,
+            showTurnOffRemoteCameraButton: true,
+            showTurnOffRemoteMicrophoneButton: true,
             showMyCameraToggleButton: true,
             showMyMicrophoneToggleButton: true,
             showAudioVideoSettingsButton: true,
+            showBackgroundProcessButton: true,
             showTextChat: true,
             showUserList: true,
-            showScreenSharingButton: true,
-            showLayoutButton: true,
-            showRoomTimer: true,
-            maxUsers: 50,
-            layout: "Auto",
-            autoHideFooter: true,
-
-            // ৩. সিনারিও সেটিংস
-            scenario: {
-                mode: ZegoUIKitPrebuilt.LiveStreaming,
-                config: {
-                    role: scenarioRole,
-                },
+            showRemoveUserButton: true, // For host to remove users
+            lowerLeftNotification: {
+                showUserJoinAndLeave: true,
+                showTextChat: true,
             },
-
-            // ৪. শেয়ারিং লিঙ্ক
+            branding: {
+                logoURL: "https://example.com/your-logo.png", // Add your logo URL
+            },
+            layout: "Auto",
+            showLayoutButton: true,
+            showNonVideoUser: true,
+            showOnlyAudioUser: true,
             sharedLinks: [{
-                name: 'Join as Audience',
+                name: 'Join as audience',
                 url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID + '&role=Audience',
             }],
-
-            // ৫. ইভেন্ট কলব্যাক (প্রয়োজনে ব্যবহারের জন্য)
-            onJoinRoom: () => { console.log('Joined the room successfully'); },
-            onLeaveRoom: () => { console.log('Left the room'); },
+            showScreenSharingButton: true,
+            showPinButton: true,
+            whiteboardConfig: {
+                showAddImageButton: true,
+                showCreateAndCloseButton: true,
+            },
+            showRoomTimer: true,
+            showRoomDetailsButton: true,
+            showInviteToCohostButton: true,
+            showRemoveCohostButton: true,
+            showRequestToCohostButton: true,
+            rightPanelExpandedType: "Chat",
+            autoHideFooter: true,
+            enableUserSearch: true,
+            showMoreButton: true,
+            showUserName: true,
+            hideUsersById: [], // No hidden users
+            videoViewConfig: [{
+                userID: userID,
+                showAvatarWhenCameraOff: true,
+            }],
+            backgroundUrl: "https://example.com/background-image.jpg", // Custom background
+            liveNotStartedTextForAudience: "Waiting for host to start live...",
+            startLiveButtonText: "Go Live!",
+            showWaitingCallAcceptAudioVideoView: true,
+            callingInvitationListConfig: {
+                waitingSelectUsers: [], // Empty for now
+                defaultChecked: true,
+            },
+            showLeavingView: true,
+            showLeaveRoomConfirmDialog: true,
+            // Event callbacks (basic logging)
+            onJoinRoom: () => console.log("Joined room"),
+            onLeaveRoom: () => console.log("Left room"),
+            onUserJoin: (users) => console.log("Users joined:", users),
+            onUserLeave: (users) => console.log("Users left:", users),
+            onLiveStart: (user) => console.log("Live started by:", user),
+            onLiveEnd: (user) => console.log("Live ended by:", user),
+            onInRoomMessageReceived: (msg) => console.log("Message:", msg),
         });
-    }
-</script>
 
+        // Remove loading spinner after join
+        setTimeout(() => {
+            document.querySelector('.loading').style.display = 'none';
+        }, 2000);
+
+        // Custom Bigo-like features simulation (e.g., add a gift button)
+        const footer = document.createElement('div');
+        footer.className = 'zego-footer';
+        footer.innerHTML = `
+            <button class="zego-button" id="gift-button"></button>
+            <button class="zego-button">Chat</button>
+            <button class="zego-button">Share</button>
+        `;
+        document.querySelector("#root").appendChild(footer);
+
+        // Handle gift button click (placeholder for Bigo-like gifts)
+        document.getElementById('gift-button').addEventListener('click', () => {
+            alert('Gift feature coming soon!'); // Simulate gift sending
+        });
+    </script>
+</body>
 </html>
