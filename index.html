@@ -8,12 +8,6 @@
             width: 100vw;
             height: 100vh;
         }
-        .zego-prejoin-view {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
     </style>
 </head>
 
@@ -44,9 +38,6 @@ window.onload = function () {
     zp.joinRoom({
         container: document.querySelector("#root"),
         showPreJoinView: true, 
-        preJoinViewConfig: {
-            title: 'Ready to join?', 
-        },
         sharedLinks: [], 
         
         turnOnMicrophoneWhenJoining: true,
