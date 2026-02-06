@@ -1,9 +1,18 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <title>HE Live Room</title>
+
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
         #root {
             width: 100vw;
             height: 100vh;
@@ -12,53 +21,102 @@
 </head>
 
 <body>
+
     <div id="root"></div>
-</body>
 
-<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-<script>
-window.onload = function () {
-    function getUrlParams(url) {
-        let urlStr = url.split('?')[1];
-        const urlSearchParams = new URLSearchParams(urlStr);
-        const result = Object.fromEntries(urlSearchParams.entries());
-        return result;
-    }
+    <!-- ZegoCloud SDK -->
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
-    const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
-    const userID = Math.floor(Math.random() * 10000) + "";
-    const userName = "User_" + userID;
-    
-    const appID = 1772319407; 
-    const serverSecret = "353697f466f6b8372143a31f9c19d8d9";
-    
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+    <script>
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1];
+            const urlSearchParams = new URLSearchParams(urlStr);
+            return Object.fromEntries(urlSearchParams.entries());
+        }
 
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-    zp.joinRoom({
-        container: document.querySelector("#root"),
-        showPreJoinView: true, 
-        sharedLinks: [], 
-        
-        turnOnMicrophoneWhenJoining: true,
-        turnOnCameraWhenJoining: true,
-        showMyCameraToggleButton: true,
-        showMyMicrophoneToggleButton: true,
-        showAudioVideoSettingsButton: true,
-        showScreenSharingButton: true,
-        showTextChat: true,
-        showUserList: true,
-        maxUsers: 50,
-        layout: "Auto",
-        showLayoutButton: true,
-        scenario: {
-            mode: ZegoUIKitPrebuilt.VideoConference,
-            config: {
-                role: "Host",
+        // ==============================
+        // 🔥 YOUR ZEGO INFO
+        // ==============================
+
+        const appID = 480055648;
+        const serverSecret = "a341f27a11c9af1547c670c09b6df111";
+
+        // ==============================
+
+        const urlParams = getUrlParams(window.location.href);
+
+        const roomID = urlParams.roomID || "HE_LIVE_ROOM_01";
+
+        const userID = "user_" + Math.floor(Math.random() * 10000);
+        const userName = "HE_User_" + userID;
+
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            roomID,
+            userID,
+            userName
+        );
+
+        // Host / Audience
+        let role = urlParams.role || 'Host';
+        role = role === 'Host'
+            ? ZegoUIKitPrebuilt.Host
+            : ZegoUIKitPrebuilt.Audience;
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+
+            // ✅ Hide PreJoin Page (তোমার request)
+            showPreJoinView: false,
+
+            maxUsers: 20,
+            layout: "Auto",
+
+            showTextChat: true,
+            showUserList: true,
+            showRoomTimer: true,
+            showScreenSharingButton: true,
+            showMyCameraToggleButton: true,
+            showMyMicrophoneToggleButton: true,
+
+            turnOnCameraWhenJoining: true,
+            turnOnMicrophoneWhenJoining: true,
+
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: {
+                    role: role,
+                },
             },
-        },
-    });
-}
-</script>
+
+            sharedLinks: [{
+                name: "Join as Audience",
+                url:
+                    window.location.protocol + "//" +
+                    window.location.host +
+                    window.location.pathname +
+                    "?roomID=" + roomID +
+                    "&role=Audience",
+            }],
+
+            branding: {
+                logoURL: ""
+            },
+
+            onJoinRoom: () => {
+                console.log("Joined Room");
+            },
+
+            onLeaveRoom: () => {
+                console.log("Left Room");
+            }
+        });
+
+    </script>
+
+</body>
 
 </html>
