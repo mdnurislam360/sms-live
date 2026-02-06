@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HE Live Streaming</title>
+<title>HE Live</title>
 
 <style>
+
 /* ======================
-   Base Layout
+   Base
 ====================== */
 html,body{
     margin:0;
@@ -25,7 +26,16 @@ html,body{
 }
 
 /* ======================
-   👁 Mini Eye Counter
+   ❌ Remove Zego default text
+====================== */
+.zego-uikit-empty-view,
+.zego-uikit-empty-text,
+.zego-uikit-placeholder{
+    display:none !important;
+}
+
+/* ======================
+   👁 Mini Viewer Counter
 ====================== */
 #coin-system{
     position:absolute;
@@ -34,19 +44,18 @@ html,body{
     display:flex;
     align-items:center;
     gap:6px;
-    padding:3px 8px;
-    background:rgba(0,0,0,.65);
-    border-radius:14px;
+    padding:4px 8px;
+    background:rgba(0,0,0,.6);
+    border-radius:16px;
     color:#fff;
     z-index:9999;
 }
 
-/* small eye icon */
+/* 🔥 4x smaller eye */
 .eye-container{
-    width:10px;
-    height:6px;
+    width:8px;
+    height:5px;
     background:#fff;
-    border:1px solid #FFAB40;
     border-radius:100% 0%;
     transform:rotate(45deg);
     position:relative;
@@ -54,8 +63,8 @@ html,body{
 }
 
 .iris{
-    width:4px;
-    height:4px;
+    width:3px;
+    height:3px;
     background:#29B6F6;
     border-radius:50%;
     position:absolute;
@@ -65,31 +74,27 @@ html,body{
 }
 
 .pupil{
-    width:2px;
-    height:2px;
-    background:#0d1117;
+    width:1.5px;
+    height:1.5px;
+    background:#000;
     border-radius:50%;
     margin:auto;
-    position:relative;
-    top:1px;
 }
 
 /* 🔥 number double size */
 #coin-count{
-    font-size:16px;
+    font-size:20px;
     font-weight:bold;
 }
 
-/* ====================== */
 </style>
 </head>
 
 <body>
 
-<!-- Zego container -->
 <div id="root"></div>
 
-<!-- 👁 Viewer Counter -->
+<!-- 👁 Counter -->
 <div id="coin-system">
     <div class="eye-container">
         <div class="iris">
@@ -100,16 +105,15 @@ html,body{
 </div>
 
 
-<!-- Zego SDK -->
 <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
 <script>
+
 /* ======================
    Zego Setup
 ====================== */
 
 const roomID = "room1";
-
 const userID = "user_" + Math.floor(Math.random()*10000);
 const userName = "User" + userID;
 
@@ -117,30 +121,20 @@ const appID = 480055648;
 const serverSecret = "a341f27a11c9af1547c670c09b6df111";
 
 const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-    appID,
-    serverSecret,
-    roomID,
-    userID,
-    userName
+    appID, serverSecret, roomID, userID, userName
 );
 
 const role = ZegoUIKitPrebuilt.Host;
 
 const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-
-/* ======================
-   Join Room
-====================== */
 zp.joinRoom({
     container: document.querySelector("#root"),
     showPreJoinView:false,
-
     scenario:{
         mode:ZegoUIKitPrebuilt.LiveStreaming,
         config:{role}
     },
-
     onLiveStart:()=>{
         startViewerSystem();
     }
@@ -148,13 +142,14 @@ zp.joinRoom({
 
 
 /* ======================
-   Smart Speed Viewer System
+   Smart Viewer System
 ====================== */
 
 let viewers = 0;
+const label = document.getElementById("coin-count");
 
 function updateViewer(){
-    document.getElementById("coin-count").innerText = viewers;
+    label.innerText = viewers;
 }
 
 function startViewerSystem(){
@@ -176,7 +171,7 @@ function startViewerSystem(){
         viewers += 3;
         updateViewer();
 
-        // এরপর প্রতি 60s → +1
+        // then every 60s → +1
         setInterval(()=>{
             viewers += 1;
             updateViewer();
