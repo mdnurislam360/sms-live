@@ -2,259 +2,309 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Video Chat - Bigo Live Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Live Stream - Premium Experience</title>
     <style>
-        body {
+        :root {
+            --primary: #ff3366;
+            --primary-dark: #cc0044;
+            --accent: #ff9933;
+            --dark: #0f001a;
+            --dark-80: rgba(15, 0, 26, 0.8);
+            --glass: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-light: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #000;
-            color: #fff;
-            overflow: hidden;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+        }
+
         #root {
             width: 100vw;
             height: 100vh;
             position: relative;
-            background: linear-gradient(135deg, #1e0033, #330066, #660033); /* Vibrant dark gradient like many live apps */
-        }
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            color: #fff;
-            z-index: 100;
+            background: linear-gradient(135deg, #1a0033, #330066, #4d0099);
         }
 
-        /* Bottom toolbar - Bigo-like colorful bottom bar */
-        .bigo-bottom-bar {
+        .loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            background: var(--dark);
+            z-index: 9999;
+            transition: opacity 0.6s;
+        }
+
+        .loading.hidden { opacity: 0; pointer-events: none; }
+
+        /* Top Bar - Professional & Clean */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            background: linear-gradient(to bottom, var(--dark-80), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 60;
+            backdrop-filter: blur(10px);
+        }
+
+        .room-info {
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.95rem;
+        }
+
+        .stat-badge {
+            background: rgba(255,255,255,0.12);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Floating Chat Panel - Modern Glassmorphism */
+        .chat-panel {
+            position: absolute;
+            bottom: 90px;
+            right: 16px;
+            width: 340px;
+            height: calc(100% - 180px);
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 50;
+        }
+
+        .chat-header {
+            padding: 14px 18px;
+            background: rgba(0,0,0,0.3);
+            font-weight: 600;
+            font-size: 1.05rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 0.96rem;
+            line-height: 1.4;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 18px;
+            max-width: 85%;
+            word-break: break-word;
+        }
+
+        .msg-self {
+            background: var(--primary);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .msg-other {
+            background: rgba(100, 100, 255, 0.35);
+        }
+
+        .msg-gift {
+            background: linear-gradient(90deg, #ff9933, #ffcc66);
+            color: #1a0033;
+            font-weight: 700;
+            text-align: center;
+            margin: 12px auto;
+            width: fit-content;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(255, 153, 51, 0.4);
+        }
+
+        .chat-footer {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .chat-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Bottom Control Bar - Premium Look */
+        .bottom-bar {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 70px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(10px);
+            height: 80px;
+            background: var(--dark-80);
+            backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
-            justify-content: space-around;
-            padding: 0 15px;
-            box-sizing: border-box;
+            justify-content: space-evenly;
             border-top: 1px solid rgba(255,255,255,0.08);
-            z-index: 50;
+            z-index: 60;
         }
 
-        .bigo-btn {
-            width: 50px;
-            height: 50px;
+        .control-btn {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: rgba(255,255,255,0.12);
             border: none;
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
         }
 
-        .bigo-btn:hover {
-            background: rgba(255,255,255,0.25);
+        .control-btn:hover {
+            background: rgba(255,255,255,0.22);
+            transform: scale(1.1);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.5);
             transform: scale(1.08);
         }
 
-        .bigo-btn.active {
-            background: linear-gradient(45deg, #ff3366, #ff6699);
+        #gift-btn, #live-btn {
+            width: 68px;
+            height: 68px;
+            font-size: 1.9rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 8px 25px rgba(255, 51, 102, 0.6);
         }
 
-        /* Special big Go Live / Gift button in center */
-        #gift-btn, #go-live-btn {
-            width: 65px;
-            height: 65px;
-            font-size: 1.8rem;
-            background: linear-gradient(135deg, #ff3366, #ff9933);
-            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.5);
-        }
-
-        /* Chat overlay - semi-transparent right side like many live apps */
-        .chat-overlay {
-            position: absolute;
-            bottom: 80px;
-            right: 12px;
-            width: 320px;
-            height: calc(100% - 160px);
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            border-radius: 16px 16px 0 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            z-index: 40;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .chat-header {
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.08);
-            font-weight: bold;
-            font-size: 1.1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            font-size: 0.95rem;
-        }
-
-        .chat-input {
-            padding: 12px;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 10px 14px;
-            border-radius: 25px;
-            border: none;
-            background: rgba(255,255,255,0.15);
-            color: white;
-        }
-
-        .chat-input button {
-            background: #ff3366;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-weight: bold;
-        }
-
-        /* Viewer count & room info top bar */
-        .top-info-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 12px 16px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 50;
-            font-size: 0.95rem;
-        }
-
-        .room-title {
-            font-weight: bold;
-            max-width: 60%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .viewer-count {
-            background: rgba(0,0,0,0.5);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        /* Message bubbles simulation */
-        .msg {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 18px;
-            max-width: 80%;
-        }
-
-        .msg-user {
-            background: rgba(100, 100, 255, 0.4);
-            align-self: flex-start;
-        }
-
-        .msg-gift {
-            background: rgba(255, 180, 0, 0.5);
-            font-weight: bold;
-            align-self: center;
-            text-align: center;
+        #gift-btn:hover, #live-btn:hover {
+            transform: scale(1.12);
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="loading">Connecting to Live Room...</div>
+        <div class="loading" id="loading">Initializing Premium Live Room...</div>
 
-        <!-- Top info bar -->
-        <div class="top-info-bar">
-            <div class="room-title">Welcome to My Live Room 🔥</div>
-            <div class="viewer-count">🟢 1.2K watching</div>
-        </div>
-
-        <!-- Chat overlay (Zego will place chat here if enabled, but we enhance it) -->
-        <div class="chat-overlay">
-            <div class="chat-header">Live Chat</div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="msg msg-gift">🎁 Rose sent by DiamondKing!</div>
-                <div class="msg msg-user"><strong>CuteGirl:</strong> Hi host! You look amazing today 😍</div>
-                <!-- More messages will appear here via Zego or custom -->
-            </div>
-            <div class="chat-input">
-                <input type="text" placeholder="Say something..." id="chat-input">
-                <button>Send</button>
+        <!-- Top Professional Info Bar -->
+        <div class="top-bar">
+            <div class="room-info">Pro Live Studio • 🔥 Trending</div>
+            <div class="stats">
+                <div class="stat-badge">🟢 2.4K Live</div>
+                <div class="stat-badge">❤️ 18.7K</div>
             </div>
         </div>
 
-        <!-- Bottom colorful bar like Bigo -->
-        <div class="bigo-bottom-bar">
-            <button class="bigo-btn" title="Beauty">✨</button>
-            <button class="bigo-btn" title="Switch Camera">🔄</button>
-            <button class="bigo-btn active" id="go-live-btn" title="Go Live / Mic">🎤</button>
-            <button class="bigo-btn" id="gift-btn" title="Send Gift">🎁</button>
-            <button class="bigo-btn" title="Share">↗️</button>
+        <!-- Elegant Glass Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">Live Conversation</div>
+            <div class="chat-body" id="chat-body">
+                <div class="message msg-gift">Welcome to the stream! 🌟</div>
+                <!-- Messages appear here -->
+            </div>
+            <div class="chat-footer">
+                <input type="text" class="chat-input" id="chat-msg" placeholder="Type a message...">
+                <button class="chat-send">Send</button>
+            </div>
+        </div>
+
+        <!-- Premium Bottom Controls -->
+        <div class="bottom-bar">
+            <button class="control-btn" title="Effects & Filters">✨</button>
+            <button class="control-btn" title="Flip Camera">🔄</button>
+            <button class="control-btn active" id="live-btn" title="Mic / Live">🎤</button>
+            <button class="control-btn" id="gift-btn" title="Send Gift">🎁</button>
+            <button class="control-btn" title="Share Room">↗️</button>
         </div>
     </div>
 
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
     <script>
-        function getUrlParams(url) {
-            let urlStr = url.split('?')[1] || '';
-            const urlSearchParams = new URLSearchParams(urlStr);
-            return Object.fromEntries(urlSearchParams.entries());
+        // ────────────────────────────────────────────────
+        //  Utility & Config
+        // ────────────────────────────────────────────────
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return Object.fromEntries(params.entries());
         }
 
-        const params = getUrlParams(window.location.href);
-        const roomID = params['roomID'] || 'bigoStyleRoom_' + Math.floor(Math.random()*10000);
-        const userID = Math.floor(Math.random() * 100000) + "";
-        const userName = "User" + userID.slice(0,4);
+        const urlParams = getUrlParams();
+        const roomID = urlParams.roomID || `proRoom_${Math.floor(Math.random()*100000)}`;
+        const userID = String(Math.floor(Math.random() * 1000000));
+        const userName = `User_${userID.slice(0,5)}`;
         const appID = 480055648;
         const serverSecret = "a341f27a11c9af1547c670c09b6df111";
 
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID, serverSecret, roomID, userID, userName
+        );
 
-        let role = (params['role'] || 'Host').toLowerCase() === 'host' 
-            ? ZegoUIKitPrebuilt.Host 
+        const role = (urlParams.role || 'Host').toLowerCase() === 'host'
+            ? ZegoUIKitPrebuilt.Host
             : ZegoUIKitPrebuilt.Audience;
 
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
+        // ────────────────────────────────────────────────
+        //  Join Room – Professional Config
+        // ────────────────────────────────────────────────
         zp.joinRoom({
             container: document.querySelector("#root"),
             showPreJoinView: false,
-            maxUsers: 12,           // Many Bigo rooms support multi-guest up to 9-12
+            maxUsers: 12,
             scenario: {
                 mode: ZegoUIKitPrebuilt.LiveStreaming,
-                config: {
-                    role,
-                },
+                config: { role },
             },
             turnOnCameraWhenJoining: true,
             turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
@@ -264,7 +314,7 @@
             showMyMicrophoneToggleButton: true,
             showAudioVideoSettingsButton: true,
             showScreenSharingButton: true,
-            showTextChat: true,               // Zego built-in chat
+            showTextChat: true,
             showUserList: true,
             layout: "Auto",
             showLayoutButton: true,
@@ -276,61 +326,58 @@
             showInviteToCohostButton: true,
             showRequestToCohostButton: true,
             showRemoveCohostButton: true,
-            rightPanelExpandedType: "Chat",
-            autoHideFooter: false,            // We control our own bottom bar
+            rightPanelExpandedType: "None",     // We use custom chat
+            autoHideFooter: false,
             showMoreButton: true,
-            backgroundUrl: "https://images.unsplash.com/photo-1557683316-973673baf926?w=800", // nice dark vibrant bg
-            liveNotStartedTextForAudience: "Host will start soon... Stay tuned! ✨",
-            startLiveButtonText: "Start Live Now",
+            backgroundUrl: "https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?auto=format&fit=crop&q=80",
+            liveNotStartedTextForAudience: "Premium broadcast starting soon...",
+            startLiveButtonText: "Begin Broadcast",
             showLeavingView: true,
             showLeaveRoomConfirmDialog: true,
 
-            // You can listen to events to update UI
-            onInRoomMessageReceived: (msgInfo) => {
-                const chatArea = document.getElementById('chat-messages');
-                if (chatArea) {
-                    const div = document.createElement('div');
-                    div.className = 'msg msg-user';
-                    div.innerHTML = `<strong>${msgInfo.fromUser?.userName || 'Someone'}:</strong> ${msgInfo.message}`;
-                    chatArea.appendChild(div);
-                    chatArea.scrollTop = chatArea.scrollHeight;
-                }
+            onInRoomMessageReceived: (msg) => {
+                addMessage(`${msg.fromUser?.userName || 'User'}: ${msg.message}`, 'other');
             },
         });
 
-        // Hide loading
-        setTimeout(() => {
-            document.querySelector('.loading').style.display = 'none';
-        }, 1500);
+        // ────────────────────────────────────────────────
+        //  Custom Chat & Gift Simulation
+        // ────────────────────────────────────────────────
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-msg');
+        const chatSendBtn = document.querySelector('.chat-send');
 
-        // Gift button interaction (Bigo-like)
-        document.getElementById('gift-btn').addEventListener('click', () => {
-            const gifts = ['Rose 🌹', 'Sports Car 🚗', 'Castle 🏰', 'Fireworks 🎆'];
-            const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
-            
-            const chatArea = document.getElementById('chat-messages');
+        function addMessage(text, type = 'other') {
             const div = document.createElement('div');
-            div.className = 'msg msg-gift';
-            div.textContent = `🎁 You sent ${randomGift} to the host!`;
-            chatArea.appendChild(div);
-            chatArea.scrollTop = chatArea.scrollHeight;
+            div.className = `message msg-${type}`;
+            div.textContent = text;
+            chatBody.appendChild(div);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
 
-            alert(`You sent a ${randomGift}! (simulation)`);
-        });
-
-        // Simple chat send simulation
-        document.querySelector('.chat-input button').addEventListener('click', () => {
-            const input = document.getElementById('chat-input');
-            if (input.value.trim()) {
-                const chatArea = document.getElementById('chat-messages');
-                const div = document.createElement('div');
-                div.className = 'msg msg-user';
-                div.innerHTML = `<strong>You:</strong> ${input.value}`;
-                chatArea.appendChild(div);
-                chatArea.scrollTop = chatArea.scrollHeight;
-                input.value = '';
+        chatSendBtn.addEventListener('click', () => {
+            if (chatInput.value.trim()) {
+                addMessage(chatInput.value, 'self');
+                chatInput.value = '';
             }
         });
+
+        chatInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') chatSendBtn.click();
+        });
+
+        // Gift animation
+        document.getElementById('gift-btn').addEventListener('click', () => {
+            const gifts = ['Rose 🌹', 'Sports Car 🚗', 'Fireworks 🎆', 'Crown 👑', 'Love Letter 💌'];
+            const gift = gifts[Math.floor(Math.random() * gifts.length)];
+            addMessage(`You sent ${gift} to the host!`, 'gift');
+            alert(`Gift Sent: ${gift} (Premium simulation)`);
+        });
+
+        // Hide loading smoothly
+        setTimeout(() => {
+            document.getElementById('loading').classList.add('hidden');
+        }, 1200);
     </script>
 </body>
 </html>
