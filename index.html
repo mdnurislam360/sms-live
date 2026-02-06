@@ -7,6 +7,9 @@
         #root {
             width: 100vw;
             height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -38,6 +41,9 @@ window.onload = function () {
     zp.joinRoom({
         container: document.querySelector("#root"),
         showPreJoinView: true, 
+        preJoinViewConfig: {
+            title: 'Join Meeting', 
+        },
         sharedLinks: [], 
         
         turnOnMicrophoneWhenJoining: true,
