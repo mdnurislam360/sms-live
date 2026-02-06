@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>HE Live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HE Live Streaming</title>
 
 <style>
+/* =========================
+   Base Layout
+========================= */
 html,body{
     margin:0;
     padding:0;
+    width:100%;
     height:100%;
     background:#0f172a;
     font-family:sans-serif;
@@ -20,70 +25,72 @@ html,body{
 }
 
 /* =========================
-   👁 Eye Coin / Viewer Badge
-   ========================= */
+   👁 Small Eye Viewer Counter (¼ size)
+========================= */
 #coin-system{
     position:absolute;
-    top:20px;
-    right:20px;
+    top:12px;
+    right:12px;
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:8px 16px;
+    gap:6px;
+    padding:4px 8px;
     background:rgba(0,0,0,.55);
-    border-radius:30px;
+    border-radius:20px;
     color:#fff;
+    font-size:12px;
     z-index:9999;
 }
 
-/* Eye Design */
+/* Eye shape */
 .eye-container{
-    position:relative;
-    width:42px;
-    height:25px;
+    width:20px;
+    height:12px;
     background:#fff;
-    border:4px solid #FFAB40;
+    border:2px solid #FFAB40;
     border-radius:100% 0%;
     transform:rotate(45deg);
+    position:relative;
     overflow:hidden;
 }
 
+/* iris */
 .iris{
-    position:absolute;
-    width:22px;
-    height:22px;
+    width:10px;
+    height:10px;
     background:#29B6F6;
     border-radius:50%;
+    position:absolute;
     top:50%;
     left:50%;
     transform:translate(-50%,-50%) rotate(-45deg);
 }
 
+/* pupil */
 .pupil{
-    width:12px;
-    height:12px;
+    width:5px;
+    height:5px;
     background:#0d1117;
     border-radius:50%;
     margin:auto;
     position:relative;
-    top:5px;
+    top:2px;
 }
 
 #coin-count{
-    font-size:16px;
     font-weight:bold;
 }
 
 /* ========================= */
-
 </style>
 </head>
 
 <body>
 
+<!-- Zego container -->
 <div id="root"></div>
 
-<!-- Eye Viewer Counter -->
+<!-- 👁 Viewer Counter -->
 <div id="coin-system">
     <div class="eye-container">
         <div class="iris">
@@ -94,14 +101,21 @@ html,body{
 </div>
 
 
+<!-- Zego SDK -->
 <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
 <script>
-
-/* -------------------------
+/* =========================
    Zego Setup
-------------------------- */
-const roomID = "room1";
+========================= */
+
+function getUrlParams(url){
+    let urlStr = url.split('?')[1] || '';
+    const urlSearchParams = new URLSearchParams(urlStr);
+    return Object.fromEntries(urlSearchParams.entries());
+}
+
+const roomID = getUrlParams(window.location.href)['roomID'] || "room1";
 const userID = "user_" + Math.floor(Math.random()*10000);
 const userName = "User" + userID;
 
@@ -116,30 +130,67 @@ const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
     userName
 );
 
-const role = ZegoUIKitPrebuilt.Host;
+let roleParam = getUrlParams(window.location.href)['role'] || 'Host';
+const role = roleParam === 'Host'
+    ? ZegoUIKitPrebuilt.Host
+    : ZegoUIKitPrebuilt.Audience;
 
 const zp = ZegoUIKitPrebuilt.create(kitToken);
 
+
+/* =========================
+   Join Room
+========================= */
 zp.joinRoom({
     container: document.querySelector("#root"),
+
     showPreJoinView:false,
+
     scenario:{
-        mode:ZegoUIKitPrebuilt.LiveStreaming,
-        config:{role}
+        mode: ZegoUIKitPrebuilt.LiveStreaming,
+        config:{ role }
     },
-    onLiveStart:()=>startViewerSystem()
+
+    sharedLinks:[{
+        name:'Join as audience',
+        url:
+        window.location.protocol + '//' +
+        window.location.host +
+        window.location.pathname +
+        '?roomID='+roomID+'&role=Audience'
+    }],
+
+    onLiveStart:()=>{
+        startViewerSystem();
+    },
+
+    onUserJoin:(users)=>{
+        viewers += users.length;
+        updateViewer();
+    },
+
+    onUserLeave:(users)=>{
+        viewers -= users.length;
+        if(viewers < 0) viewers = 0;
+        updateViewer();
+    }
 });
 
 
-/* -------------------------
-   Eye Viewer / Coin System
-------------------------- */
+/* =========================
+   👁 Viewer / Coin System
+========================= */
 let viewers = 0;
 
+function updateViewer(){
+    document.getElementById("coin-count").innerText = viewers;
+}
+
 function startViewerSystem(){
+    // Demo auto increase
     setInterval(()=>{
-        viewers += Math.floor(Math.random()*4)+1;
-        document.getElementById("coin-count").innerText = viewers;
+        viewers += Math.floor(Math.random()*3)+1;
+        updateViewer();
     },3000);
 }
 
