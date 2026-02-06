@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HE Live Streaming</title>
+<title>HE Live</title>
 
 <style>
-/* =========================
-   Base Layout
-========================= */
+/* ======================
+   Base
+====================== */
 html,body{
     margin:0;
     padding:0;
@@ -24,30 +24,31 @@ html,body{
     position:relative;
 }
 
-/* =========================
-   👁 Small Eye Viewer Counter (¼ size)
-========================= */
+/* ======================
+   👁 Ultra Mini Counter
+   (১/৩ size)
+====================== */
 #coin-system{
     position:absolute;
-    top:12px;
-    right:12px;
+    top:8px;
+    right:8px;
     display:flex;
     align-items:center;
-    gap:6px;
-    padding:4px 8px;
+    gap:4px;
+    padding:2px 6px;
     background:rgba(0,0,0,.55);
-    border-radius:20px;
+    border-radius:15px;
     color:#fff;
-    font-size:12px;
+    font-size:10px;
     z-index:9999;
 }
 
-/* Eye shape */
+/* tiny eye */
 .eye-container{
-    width:20px;
-    height:12px;
+    width:14px;
+    height:8px;
     background:#fff;
-    border:2px solid #FFAB40;
+    border:1.5px solid #FFAB40;
     border-radius:100% 0%;
     transform:rotate(45deg);
     position:relative;
@@ -56,8 +57,8 @@ html,body{
 
 /* iris */
 .iris{
-    width:10px;
-    height:10px;
+    width:6px;
+    height:6px;
     background:#29B6F6;
     border-radius:50%;
     position:absolute;
@@ -68,29 +69,29 @@ html,body{
 
 /* pupil */
 .pupil{
-    width:5px;
-    height:5px;
+    width:3px;
+    height:3px;
     background:#0d1117;
     border-radius:50%;
     margin:auto;
     position:relative;
-    top:2px;
+    top:1px;
 }
 
 #coin-count{
     font-weight:bold;
+    font-size:10px;
 }
 
-/* ========================= */
+/* ====================== */
 </style>
 </head>
 
 <body>
 
-<!-- Zego container -->
 <div id="root"></div>
 
-<!-- 👁 Viewer Counter -->
+<!-- 👁 viewer badge -->
 <div id="coin-system">
     <div class="eye-container">
         <div class="iris">
@@ -100,22 +101,13 @@ html,body{
     <span id="coin-count">0</span>
 </div>
 
-
-<!-- Zego SDK -->
 <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
 <script>
-/* =========================
+/* ======================
    Zego Setup
-========================= */
-
-function getUrlParams(url){
-    let urlStr = url.split('?')[1] || '';
-    const urlSearchParams = new URLSearchParams(urlStr);
-    return Object.fromEntries(urlSearchParams.entries());
-}
-
-const roomID = getUrlParams(window.location.href)['roomID'] || "room1";
+====================== */
+const roomID = "room1";
 const userID = "user_" + Math.floor(Math.random()*10000);
 const userName = "User" + userID;
 
@@ -123,63 +115,35 @@ const appID = 480055648;
 const serverSecret = "a341f27a11c9af1547c670c09b6df111";
 
 const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-    appID,
-    serverSecret,
-    roomID,
-    userID,
-    userName
+    appID, serverSecret, roomID, userID, userName
 );
 
-let roleParam = getUrlParams(window.location.href)['role'] || 'Host';
-const role = roleParam === 'Host'
-    ? ZegoUIKitPrebuilt.Host
-    : ZegoUIKitPrebuilt.Audience;
+const role = ZegoUIKitPrebuilt.Host;
 
 const zp = ZegoUIKitPrebuilt.create(kitToken);
 
 
-/* =========================
+/* ======================
    Join Room
-========================= */
+====================== */
 zp.joinRoom({
     container: document.querySelector("#root"),
-
     showPreJoinView:false,
-
     scenario:{
-        mode: ZegoUIKitPrebuilt.LiveStreaming,
-        config:{ role }
+        mode:ZegoUIKitPrebuilt.LiveStreaming,
+        config:{role}
     },
-
-    sharedLinks:[{
-        name:'Join as audience',
-        url:
-        window.location.protocol + '//' +
-        window.location.host +
-        window.location.pathname +
-        '?roomID='+roomID+'&role=Audience'
-    }],
-
     onLiveStart:()=>{
         startViewerSystem();
-    },
-
-    onUserJoin:(users)=>{
-        viewers += users.length;
-        updateViewer();
-    },
-
-    onUserLeave:(users)=>{
-        viewers -= users.length;
-        if(viewers < 0) viewers = 0;
-        updateViewer();
     }
 });
 
 
-/* =========================
-   👁 Viewer / Coin System
-========================= */
+/* ======================
+   Slow Viewer System
+   (১০ গুণ slow)
+====================== */
+
 let viewers = 0;
 
 function updateViewer(){
@@ -187,11 +151,12 @@ function updateViewer(){
 }
 
 function startViewerSystem(){
-    // Demo auto increase
+
+    // প্রতি 8-10 সেকেন্ডে +1
     setInterval(()=>{
-        viewers += Math.floor(Math.random()*3)+1;
+        viewers += 1;
         updateViewer();
-    },3000);
+    }, 9000);   // slow speed (আগে 3s ছিল)
 }
 
 </script>
