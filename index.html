@@ -1,208 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>HE Live Pro</title>
-
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Streaming App</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: Arial;
-            background: black;
-        }
-
         #root {
             width: 100vw;
             height: 100vh;
         }
-
-        /* ======================
-           Floating Buttons Style
-        ====================== */
-
-        .fab {
-            position: fixed;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-
-        #aiBtn {
-            top: 20px;
-            right: 20px;
-            background: white;
-        }
-
-        #giftBtn {
-            bottom: 120px;
-            right: 20px;
-            background: #ff4d6d;
-            color: white;
-        }
-
-        #followBtn {
-            bottom: 190px;
-            right: 20px;
-            background: #00c853;
-            color: white;
-        }
-
-        /* ======================
-           Coin Counter
-        ====================== */
-
-        #coinBox {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            color: gold;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 16px;
-            z-index: 9999;
-        }
-
-        /* ======================
-           Bottom Live Bar
-        ====================== */
-
-        #bottomBar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        #liveBtn {
-            background: red;
-            color: white;
-            padding: 12px 40px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
     </style>
 </head>
 
 <body>
-
     <div id="root"></div>
+</body>
 
-    <!-- Coin -->
-    <div id="coinBox">🪙 1000</div>
-
-    <!-- Buttons -->
-    <div id="aiBtn" class="fab">✨</div>
-    <div id="giftBtn" class="fab">🎁</div>
-    <div id="followBtn" class="fab">❤️</div>
-
-    <!-- Bottom Bar -->
-    <div id="bottomBar">
-        <div id="liveBtn">🔴 LIVE</div>
-    </div>
-
-
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 <script>
-
-    /* ======================
-       ZEGO CONFIG
-    ====================== */
-
-    const appID = 480055648;
-    const serverSecret = "a341f27a11c9af1547c670c09b6df111";
-
-    const roomID = "HE_LIVE_ROOM";
-    const userID = "user_" + Math.floor(Math.random() * 10000);
-    const userName = "HE_User";
-
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-    );
-
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-    zp.joinRoom({
-        container: document.querySelector("#root"),
-
-        showPreJoinView: false,
-
-        scenario: {
-            mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: {
-                role: ZegoUIKitPrebuilt.Host
-            }
-        },
-
-        showTextChat: true,
-        showUserList: true,
-        showScreenSharingButton: true
-    });
-
-
-    /* ======================
-       COIN + GIFT SYSTEM
-    ====================== */
-
-    let coins = 1000;
-    const coinBox = document.getElementById("coinBox");
-
-    function updateCoins() {
-        coinBox.innerHTML = "🪙 " + coins;
-    }
-
-    // Gift click
-    document.getElementById("giftBtn").onclick = () => {
-
-        if (coins >= 100) {
-            coins -= 100;
-            updateCoins();
-            alert("🎁 Gift Sent! -100 coins");
-        } else {
-            alert("❌ Not enough coins");
+    window.onload = function () {
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1];
+            const urlSearchParams = new URLSearchParams(urlStr);
+            const result = Object.fromEntries(urlSearchParams.entries());
+            return result;
         }
-    };
 
-    // Follow
-    document.getElementById("followBtn").onclick = () => {
-        alert("❤️ Followed Host");
-    };
+        // URL থেকে roomID সংগ্রহ করা অথবা র‍্যান্ডম জেনারেট করা
+        const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "User_" + userID;
 
-    // AI button
-    document.getElementById("aiBtn").onclick = () => {
-        alert("✨ AI Assistant Coming Soon");
-    };
+        // আপনার দেওয়া ক্রিডেনশিয়ালস
+        const appID = 1772319407; // আপনার আগের চ্যাটে দেওয়া আইডি অনুযায়ী আপডেট করা হয়েছে
+        const serverSecret = "a341f27a11c9af1547c670c09b6df111";
+        
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
 
-    // Live button
-    document.getElementById("liveBtn").onclick = () => {
-        alert("🔴 You are already Live!");
-    };
+        // ইউজার রোল সেটআপ (Host অথবা Audience)
+        let role = getUrlParams(window.location.href)['role'] || 'Host';
+        const scenarioRole = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+        // ZegoCloudRoomConfig অনুযায়ী পূর্ণাঙ্গ কনফিগারেশন
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            
+            // ১. জয়েন করার আগের সেটিংস
+            showPreJoinView: true,
+            preJoinViewConfig: {
+                title: "Ready to Go Live?",
+            },
+            turnOnMicrophoneWhenJoining: true,
+            turnOnCameraWhenJoining: true,
+            useFrontFacingCamera: true,
+
+            // ২. ইন্টারফেস সেটিংস (UI Controls)
+            showMyCameraToggleButton: true,
+            showMyMicrophoneToggleButton: true,
+            showAudioVideoSettingsButton: true,
+            showTextChat: true,
+            showUserList: true,
+            showScreenSharingButton: true,
+            showLayoutButton: true,
+            showRoomTimer: true,
+            maxUsers: 50,
+            layout: "Auto",
+            autoHideFooter: true,
+
+            // ৩. সিনারিও সেটিংস
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: {
+                    role: scenarioRole,
+                },
+            },
+
+            // ৪. শেয়ারিং লিঙ্ক
+            sharedLinks: [{
+                name: 'Join as Audience',
+                url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID + '&role=Audience',
+            }],
+
+            // ৫. ইভেন্ট কলব্যাক (প্রয়োজনে ব্যবহারের জন্য)
+            onJoinRoom: () => { console.log('Joined the room successfully'); },
+            onLeaveRoom: () => { console.log('Left the room'); },
+        });
+    }
 </script>
 
-</body>
 </html>
