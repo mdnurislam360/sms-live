@@ -3,233 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Video Chat - Like Bigo Live</title>
+    <title>Live Video Chat - Bigo Live Style</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
         }
         #root {
             width: 100vw;
             height: 100vh;
             position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Vibrant gradient like Bigo Live */
+            background: linear-gradient(135deg, #1e0033, #330066, #660033); /* Vibrant dark gradient like many live apps */
         }
-        /* Custom overlay for chat and controls to make it look modern */
-        .zego-chat-overlay {
-            position: absolute;
-            bottom: 60px;
-            right: 20px;
-            width: 300px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 15px;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            overflow-y: auto;
-        }
-        /* Footer toolbar styling */
-        .zego-footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-        }
-        .zego-button {
-            background: #ff4b2b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .zego-button:hover {
-            background: #ff416c;
-        }
-        /* User list styling */
-        .zego-user-list {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        /* Add gift button simulation (custom for Bigo-like feel) */
-        #gift-button {
-            background: url('https://example.com/gift-icon.png') no-repeat center; /* Replace with actual icon URL */
-            width: 50px;
-            height: 50px;
-        }
-        /* Loading spinner */
         .loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 24px;
+            font-size: 1.5rem;
+            color: #fff;
+            z-index: 100;
+        }
+
+        /* Bottom toolbar - Bigo-like colorful bottom bar */
+        .bigo-bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 15px;
+            box-sizing: border-box;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 50;
+        }
+
+        .bigo-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: none;
             color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .bigo-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.08);
+        }
+
+        .bigo-btn.active {
+            background: linear-gradient(45deg, #ff3366, #ff6699);
+        }
+
+        /* Special big Go Live / Gift button in center */
+        #gift-btn, #go-live-btn {
+            width: 65px;
+            height: 65px;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #ff3366, #ff9933);
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.5);
+        }
+
+        /* Chat overlay - semi-transparent right side like many live apps */
+        .chat-overlay {
+            position: absolute;
+            bottom: 80px;
+            right: 12px;
+            width: 320px;
+            height: calc(100% - 160px);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+        }
+
+        .chat-input {
+            padding: 12px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .chat-input button {
+            background: #ff3366;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        /* Viewer count & room info top bar */
+        .top-info-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+            font-size: 0.95rem;
+        }
+
+        .room-title {
+            font-weight: bold;
+            max-width: 60%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .viewer-count {
+            background: rgba(0,0,0,0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Message bubbles simulation */
+        .msg {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+
+        .msg-user {
+            background: rgba(100, 100, 255, 0.4);
+            align-self: flex-start;
+        }
+
+        .msg-gift {
+            background: rgba(255, 180, 0, 0.5);
+            font-weight: bold;
+            align-self: center;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="loading">Loading Live Chat...</div>
+        <div class="loading">Connecting to Live Room...</div>
+
+        <!-- Top info bar -->
+        <div class="top-info-bar">
+            <div class="room-title">Welcome to My Live Room 🔥</div>
+            <div class="viewer-count">🟢 1.2K watching</div>
+        </div>
+
+        <!-- Chat overlay (Zego will place chat here if enabled, but we enhance it) -->
+        <div class="chat-overlay">
+            <div class="chat-header">Live Chat</div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="msg msg-gift">🎁 Rose sent by DiamondKing!</div>
+                <div class="msg msg-user"><strong>CuteGirl:</strong> Hi host! You look amazing today 😍</div>
+                <!-- More messages will appear here via Zego or custom -->
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Say something..." id="chat-input">
+                <button>Send</button>
+            </div>
+        </div>
+
+        <!-- Bottom colorful bar like Bigo -->
+        <div class="bigo-bottom-bar">
+            <button class="bigo-btn" title="Beauty">✨</button>
+            <button class="bigo-btn" title="Switch Camera">🔄</button>
+            <button class="bigo-btn active" id="go-live-btn" title="Go Live / Mic">🎤</button>
+            <button class="bigo-btn" id="gift-btn" title="Send Gift">🎁</button>
+            <button class="bigo-btn" title="Share">↗️</button>
+        </div>
     </div>
+
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
     <script>
         function getUrlParams(url) {
-            let urlStr = url.split('?')[1];
+            let urlStr = url.split('?')[1] || '';
             const urlSearchParams = new URLSearchParams(urlStr);
-            const result = Object.fromEntries(urlSearchParams.entries());
-            return result;
+            return Object.fromEntries(urlSearchParams.entries());
         }
 
-        // Set up parameters
         const params = getUrlParams(window.location.href);
-        const roomID = params['roomID'] || 'defaultLiveRoom'; // Default room if not provided
-        const userID = Math.floor(Math.random() * 10000) + "";
-        const userName = "userName" + userID;
+        const roomID = params['roomID'] || 'bigoStyleRoom_' + Math.floor(Math.random()*10000);
+        const userID = Math.floor(Math.random() * 100000) + "";
+        const userName = "User" + userID.slice(0,4);
         const appID = 480055648;
-        const serverSecret = "a341f27a11c9af1547c670c09b6df111"; // From provided info
+        const serverSecret = "a341f27a11c9af1547c670c09b6df111";
 
-        // Generate Kit Token
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
 
-        // Determine role based on URL params
-        let role = params['role'] || 'Host';
-        role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
+        let role = (params['role'] || 'Host').toLowerCase() === 'host' 
+            ? ZegoUIKitPrebuilt.Host 
+            : ZegoUIKitPrebuilt.Audience;
 
-        // Create Zego instance
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-        // Join room with full configuration for a Bigo-like experience
         zp.joinRoom({
             container: document.querySelector("#root"),
-            showPreJoinView: false, // Hide prejoin view as per example
-            maxUsers: 20, // Allow up to 20 users
+            showPreJoinView: false,
+            maxUsers: 12,           // Many Bigo rooms support multi-guest up to 9-12
             scenario: {
                 mode: ZegoUIKitPrebuilt.LiveStreaming,
                 config: {
                     role,
                 },
             },
-            console: "VERBOSE", // For debugging
-            screenSharingConfig: {
-                resolution: "1080p",
-                width: 1920,
-                height: 1080,
-                frameRate: 30,
-                maxBitRate: 3000,
-            },
-            language: "EN", // English by default
-            sendMessageChannel: "ZIM", // Use ZIM for messaging
-            videoScreenConfig: {
-                objectFit: "cover",
-                localMirror: true,
-                pullStreamMirror: false,
-            },
-            turnOnMicrophoneWhenJoining: true,
             turnOnCameraWhenJoining: true,
+            turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
             useFrontFacingCamera: true,
             videoResolutionDefault: "1080p",
-            enableStereo: true,
-            showTurnOffRemoteCameraButton: true,
-            showTurnOffRemoteMicrophoneButton: true,
             showMyCameraToggleButton: true,
             showMyMicrophoneToggleButton: true,
             showAudioVideoSettingsButton: true,
-            showBackgroundProcessButton: true,
-            showTextChat: true,
+            showScreenSharingButton: true,
+            showTextChat: true,               // Zego built-in chat
             showUserList: true,
-            showRemoveUserButton: true, // For host to remove users
-            lowerLeftNotification: {
-                showUserJoinAndLeave: true,
-                showTextChat: true,
-            },
-            branding: {
-                logoURL: "https://example.com/your-logo.png", // Add your logo URL
-            },
             layout: "Auto",
             showLayoutButton: true,
-            showNonVideoUser: true,
-            showOnlyAudioUser: true,
             sharedLinks: [{
-                name: 'Join as audience',
-                url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID + '&role=Audience',
+                name: 'Join as Viewer',
+                url: `\( {window.location.origin} \){window.location.pathname}?roomID=${roomID}&role=Audience`
             }],
-            showScreenSharingButton: true,
             showPinButton: true,
-            whiteboardConfig: {
-                showAddImageButton: true,
-                showCreateAndCloseButton: true,
-            },
-            showRoomTimer: true,
-            showRoomDetailsButton: true,
             showInviteToCohostButton: true,
-            showRemoveCohostButton: true,
             showRequestToCohostButton: true,
+            showRemoveCohostButton: true,
             rightPanelExpandedType: "Chat",
-            autoHideFooter: true,
-            enableUserSearch: true,
+            autoHideFooter: false,            // We control our own bottom bar
             showMoreButton: true,
-            showUserName: true,
-            hideUsersById: [], // No hidden users
-            videoViewConfig: [{
-                userID: userID,
-                showAvatarWhenCameraOff: true,
-            }],
-            backgroundUrl: "https://example.com/background-image.jpg", // Custom background
-            liveNotStartedTextForAudience: "Waiting for host to start live...",
-            startLiveButtonText: "Go Live!",
-            showWaitingCallAcceptAudioVideoView: true,
-            callingInvitationListConfig: {
-                waitingSelectUsers: [], // Empty for now
-                defaultChecked: true,
-            },
+            backgroundUrl: "https://images.unsplash.com/photo-1557683316-973673baf926?w=800", // nice dark vibrant bg
+            liveNotStartedTextForAudience: "Host will start soon... Stay tuned! ✨",
+            startLiveButtonText: "Start Live Now",
             showLeavingView: true,
             showLeaveRoomConfirmDialog: true,
-            // Event callbacks (basic logging)
-            onJoinRoom: () => console.log("Joined room"),
-            onLeaveRoom: () => console.log("Left room"),
-            onUserJoin: (users) => console.log("Users joined:", users),
-            onUserLeave: (users) => console.log("Users left:", users),
-            onLiveStart: (user) => console.log("Live started by:", user),
-            onLiveEnd: (user) => console.log("Live ended by:", user),
-            onInRoomMessageReceived: (msg) => console.log("Message:", msg),
+
+            // You can listen to events to update UI
+            onInRoomMessageReceived: (msgInfo) => {
+                const chatArea = document.getElementById('chat-messages');
+                if (chatArea) {
+                    const div = document.createElement('div');
+                    div.className = 'msg msg-user';
+                    div.innerHTML = `<strong>${msgInfo.fromUser?.userName || 'Someone'}:</strong> ${msgInfo.message}`;
+                    chatArea.appendChild(div);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            },
         });
 
-        // Remove loading spinner after join
+        // Hide loading
         setTimeout(() => {
             document.querySelector('.loading').style.display = 'none';
-        }, 2000);
+        }, 1500);
 
-        // Custom Bigo-like features simulation (e.g., add a gift button)
-        const footer = document.createElement('div');
-        footer.className = 'zego-footer';
-        footer.innerHTML = `
-            <button class="zego-button" id="gift-button"></button>
-            <button class="zego-button">Chat</button>
-            <button class="zego-button">Share</button>
-        `;
-        document.querySelector("#root").appendChild(footer);
+        // Gift button interaction (Bigo-like)
+        document.getElementById('gift-btn').addEventListener('click', () => {
+            const gifts = ['Rose 🌹', 'Sports Car 🚗', 'Castle 🏰', 'Fireworks 🎆'];
+            const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
+            
+            const chatArea = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'msg msg-gift';
+            div.textContent = `🎁 You sent ${randomGift} to the host!`;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
 
-        // Handle gift button click (placeholder for Bigo-like gifts)
-        document.getElementById('gift-button').addEventListener('click', () => {
-            alert('Gift feature coming soon!'); // Simulate gift sending
+            alert(`You sent a ${randomGift}! (simulation)`);
+        });
+
+        // Simple chat send simulation
+        document.querySelector('.chat-input button').addEventListener('click', () => {
+            const input = document.getElementById('chat-input');
+            if (input.value.trim()) {
+                const chatArea = document.getElementById('chat-messages');
+                const div = document.createElement('div');
+                div.className = 'msg msg-user';
+                div.innerHTML = `<strong>You:</strong> ${input.value}`;
+                chatArea.appendChild(div);
+                chatArea.scrollTop = chatArea.scrollHeight;
+                input.value = '';
+            }
         });
     </script>
 </body>
