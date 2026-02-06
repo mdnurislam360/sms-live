@@ -7,9 +7,12 @@
         #root {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        }
+        .zego-prejoin-view {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
     </style>
 </head>
@@ -42,7 +45,7 @@ window.onload = function () {
         container: document.querySelector("#root"),
         showPreJoinView: true, 
         preJoinViewConfig: {
-            title: 'Join Meeting', 
+            title: 'Ready to join?', 
         },
         sharedLinks: [], 
         
