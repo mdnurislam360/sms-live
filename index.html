@@ -1,193 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>HE Live Pro</title>
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-    
+    <meta charset="UTF-8">
+    <title>HE Live Streaming</title>
     <style>
-        body {
+        /* Fullscreen Root */
+        html, body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: black;
-            color: white;
+            width: 100%;
+            height: 100%;
+            background-color: #0f172a;
+            font-family: 'Segoe UI', sans-serif;
         }
         #root {
             width: 100vw;
             height: 100vh;
+            position: relative;
         }
 
-        /* Floating Buttons */
-        .fab {
-            position: fixed;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transition: transform 0.2s;
-        }
-        .fab:hover {
-            transform: scale(1.1);
-        }
-
-        #aiBtn {
+        /* Top Diamond/Coin overlay */
+        #coin-system {
+            position: absolute;
             top: 20px;
             right: 20px;
-            background: white;
-            color: black;
-        }
-
-        #giftBtn {
-            bottom: 140px;
-            right: 20px;
-            background: #ff4d6d;
-            color: white;
-        }
-
-        #followBtn {
-            bottom: 220px;
-            right: 20px;
-            background: #00c853;
-            color: white;
-        }
-
-        /* Coin Box */
-        #coinBox {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            color: #ffd700;
-            padding: 10px 18px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 9999;
-            border: 1px solid #ffd70033;
-        }
-
-        /* Bottom Bar */
-        #bottomBar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
+            border-radius: 25px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
             z-index: 9999;
         }
 
-        #liveBtn {
-            background: #ff0000;
-            color: white;
-            padding: 14px 50px;
-            border-radius: 50px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 15px #ff000066;
+        #coin-system img {
+            width: 24px;
+            height: 24px;
         }
+
+        /* Prejoin hidden: handled via JS */
     </style>
 </head>
 <body>
 
+    <!-- Live Stream Container -->
     <div id="root"></div>
 
-    <!-- Coin Display -->
-    <div id="coinBox">🪙 1000</div>
-
-    <!-- Floating Buttons -->
-    <div id="aiBtn" class="fab">✨</div>
-    <div id="giftBtn" class="fab">🎁</div>
-    <div id="followBtn" class="fab">❤️</div>
-
-    <!-- Bottom Bar -->
-    <div id="bottomBar">
-        <div id="liveBtn">🔴 LIVE</div>
+    <!-- Diamond/Coin Overlay -->
+    <div id="coin-system">
+        <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" alt="diamond">
+        <span id="coin-count">0</span>
     </div>
 
-<script>
-    // ================= ZEGO LIVE CONFIG =================
-    const appID = 480055648;
-    const serverSecret = "a341f27a11c9af1547c670c09b6df111";
-
-    const roomID = "HE_LIVE_ROOM";
-    const userID = "user_" + Math.floor(Math.random() * 10000);
-    const userName = "HE_User";
-
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-    );
-
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-    zp.joinRoom({
-        container: document.querySelector("#root"),
-        showPreJoinView: false,
-        scenario: {
-            mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: {
-                role: ZegoUIKitPrebuilt.Host
-            }
-        },
-        showTextChat: true,
-        showUserList: true,
-        showScreenSharingButton: true
-    });
-
-    // ================= COIN + GIFT SYSTEM =================
-    let coins = 1000;
-    const coinBox = document.getElementById("coinBox");
-
-    function updateCoins() {
-        coinBox.innerHTML = "🪙 " + coins;
-    }
-
-    // Gift button - fixed 100 coins per gift
-    document.getElementById("giftBtn").onclick = () => {
-        if (coins >= 100) {
-            coins -= 100;
-            updateCoins();
-            alert("🎁 Gift Sent! -100 coins");
-            // চাইলে এখানে Zego chat-এ মেসেজ পাঠাতে পারো, কিন্তু এখন সিম্পল রাখলাম
-        } else {
-            alert("❌ Not enough coins! You need at least 100 coins.");
+    <!-- ZegoCloud UIKit Prebuilt -->
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script>
+        // ---------------------
+        // Utility: URL Params
+        // ---------------------
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1] || '';
+            const urlSearchParams = new URLSearchParams(urlStr);
+            return Object.fromEntries(urlSearchParams.entries());
         }
-    };
 
-    // Follow button
-    document.getElementById("followBtn").onclick = () => {
-        alert("❤️ You followed the host!");
-    };
+        // ---------------------
+        // ZegoCloud Config
+        // ---------------------
+        const roomID = getUrlParams(window.location.href)['roomID'] || "room1";
+        const userID = "user_" + Math.floor(Math.random() * 10000);
+        const userName = "User" + userID;
+        const appID = 480055648; // আপনার AppID
+        const serverSecret = "a341f27a11c9af1547c670c09b6df111"; // Server Secret
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
 
-    // AI button (placeholder)
-    document.getElementById("aiBtn").onclick = () => {
-        alert("✨ AI Assistant - Coming Soon");
-    };
+        // Role: Host or Audience
+        let roleParam = getUrlParams(window.location.href)['role'] || 'Host';
+        const role = roleParam === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
-    // Live button (already live)
-    document.getElementById("liveBtn").onclick = () => {
-        alert("🔴 You are already LIVE!");
-    };
+        // ---------------------
+        // Join Room
+        // ---------------------
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            showPreJoinView: false, // Prejoin hide
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: { role }
+            },
+            sharedLinks: [{
+                name: 'Join as audience',
+                url:
+                    window.location.protocol + '//' + 
+                    window.location.host + window.location.pathname +
+                    '?roomID=' + roomID + '&role=Audience'
+            }],
+            videoViewConfig: [{
+                showAvatarWhenCameraOff: true
+            }],
+            onLiveStart: (user) => {
+                console.log("Live started by: ", user.userName);
+                startCoinSystem();
+            },
+            onLiveEnd: (user) => {
+                console.log("Live ended by: ", user.userName);
+            },
+            onUserJoin: (users) => {
+                console.log("New users joined:", users);
+            },
+            onUserLeave: (users) => {
+                console.log("Users left:", users);
+            }
+        });
 
-    // Initial update
-    updateCoins();
+        // ---------------------
+        // Diamond/Coin System
+        // ---------------------
+        let coins = 0;
+        function startCoinSystem() {
+            // Example: Auto increment coin every 5 seconds
+            setInterval(() => {
+                coins += Math.floor(Math.random() * 5) + 1; // 1-5 random coins
+                document.getElementById('coin-count').innerText = coins;
+            }, 5000);
+        }
 
-</script>
+    </script>
 </body>
 </html>
