@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>View Live - Video Chat</title>
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
   <style>
     * {
       margin: 0;
@@ -72,6 +73,11 @@
       aspect-ratio: 3/4;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .stream-card:hover {
+      transform: scale(1.02);
     }
 
     .video-container {
@@ -103,6 +109,20 @@
       50% { opacity: 0.5; }
     }
 
+    .viewers-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     /* User Info */
     .user-info {
       position: absolute;
@@ -119,60 +139,33 @@
       font-weight: 600;
     }
 
-    /* Modal Styling */
-    .modal {
+    .status {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    /* ZegoCloud Container */
+    #zego-container {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #000;
       z-index: 2000;
-      flex-direction: column;
+      background: #000;
     }
 
-    .modal.active {
-      display: flex;
-    }
-
-    .video-screen {
-      flex: 1;
-      position: relative;
-    }
-
-    #remoteStream {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .local-preview {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 100px;
-      height: 150px;
-      background: #333;
-      border-radius: 8px;
-      border: 2px solid white;
-      overflow: hidden;
-    }
-
-    #localStream {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-
-    /* Controls */
-    .controls {
-      padding: 30px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: rgba(0,0,0,0.5);
+    /* Custom Controls Overlay */
+    .custom-controls {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 20px;
+      z-index: 3000;
     }
 
     .btn {
@@ -185,10 +178,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.3s;
     }
 
-    .btn-end { background: #ff3b30; color: white; }
-    .btn-action { background: rgba(255,255,255,0.2); color: white; }
+    .btn-end { 
+      background: #ff3b30; 
+      color: white; 
+    }
+    
+    .btn-end:hover {
+      background: #d32f2f;
+      transform: scale(1.1);
+    }
 
     /* Bottom Nav */
     .bottom-nav {
@@ -200,6 +201,7 @@
       justify-content: space-around;
       padding: 10px 0 20px;
       border-top: 1px solid #ddd;
+      z-index: 100;
     }
 
     .nav-item {
@@ -209,26 +211,145 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: color 0.3s;
     }
 
-    .nav-item.active { color: #e91e63; }
+    .nav-item:hover {
+      color: #e91e63;
+    }
+
+    .nav-item.active { 
+      color: #e91e63; 
+      font-weight: 600;
+    }
+
     .center-btn {
-      background: #e91e63;
+      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
       color: white;
-      width: 50px;
-      height: 50px;
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
       margin-top: -25px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      box-shadow: 0 4px 10px rgba(233, 30, 99, 0.4);
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+      cursor: pointer;
+      border: 3px solid white;
+      transition: transform 0.3s;
+    }
+
+    .center-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 2500;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid #e91e63;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Room Input Modal */
+    .room-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1500;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .room-modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .room-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .room-input:focus {
+      outline: none;
+      border-color: #e91e63;
+    }
+
+    .join-btn {
+      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s;
+    }
+
+    .join-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 3001;
     }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <div class="logo">
@@ -236,66 +357,84 @@
         <span>Broadcast Yourself</span>
       </div>
     </div>
-    <div style="font-size: 20px;">🔔</div>
+    <div style="font-size: 20px; cursor: pointer;">🔔</div>
   </div>
 
+  <!-- Main Grid -->
   <div class="stream-grid" id="streamGrid">
-    </div>
+    <!-- Dynamic content will be loaded here -->
+  </div>
 
+  <!-- Bottom Navigation -->
   <div class="bottom-nav">
-    <a href="#" class="nav-item active">
+    <a href="#" class="nav-item active" onclick="showHome()">
       <span style="font-size: 20px;">🏠</span>
       <span>হোম</span>
     </a>
-    <div class="center-btn" onclick="startCall()">📹</div>
+    <div class="center-btn" onclick="showRoomModal()" title="নতুন কল শুরু করুন">📹</div>
     <a href="#" class="nav-item">
       <span style="font-size: 20px;">👤</span>
       <span>প্রোফাইল</span>
     </a>
   </div>
 
-  <div class="modal" id="videoModal">
-    <div class="video-screen">
-      <video id="remoteStream" autoplay playsinline poster="https://via.placeholder.com/400x800?text=Connecting..."></video>
-      <div class="local-preview">
-        <video id="localStream" autoplay playsinline muted></video>
-      </div>
-      
-      <div style="position: absolute; top: 20px; left: 20px; color: white; text-shadow: 1px 1px 5px #000;">
-        <h4 id="callerName">View Live User</h4>
-        <small>🔴 00:00</small>
-      </div>
-    </div>
-
-    <div class="controls">
-      <button class="btn btn-action" onclick="toggleMic()">🎤</button>
-      <button class="btn btn-end" onclick="endCall()">📞</button>
-      <button class="btn btn-action" onclick="toggleCam()">🔄</button>
+  <!-- Room Input Modal -->
+  <div class="room-modal" id="roomModal">
+    <div class="room-modal-content">
+      <h3 style="color: #e91e63; margin-bottom: 10px;">ভিডিও চ্যাটে যোগ দিন</h3>
+      <p style="color: #666; margin-bottom: 20px;">রুম আইডি দিন বা নতুন তৈরি করুন</p>
+      <input type="text" class="room-input" id="roomInput" placeholder="রুম আইডি (ঐচ্ছিক)">
+      <button class="join-btn" onclick="startZegoCall()">কল শুরু করুন</button>
+      <button style="margin-top: 10px; background: none; border: none; color: #666; cursor: pointer;" onclick="closeRoomModal()">বাতিল</button>
     </div>
   </div>
 
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>কানেক্ট হচ্ছে...</p>
+  </div>
+
+  <!-- ZegoCloud Video Container -->
+  <div id="zego-container"></div>
+
+  <!-- End Call Button (Floating) -->
+  <button class="btn btn-end" id="endCallBtn" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 3000;" onclick="endZegoCall()">
+    📞
+  </button>
+
   <script>
+    // Sample Users Data
     const users = [
-      { name: "সুমি আক্তার", img: "https://i.pravatar.cc/150?u=1" },
-      { name: "নীল আকাশ", img: "https://i.pravatar.cc/150?u=2" },
-      { name: "মিষ্টি মেয়ে", img: "https://i.pravatar.cc/150?u=3" },
-      { name: "রাজপুত্র", img: "https://i.pravatar.cc/150?u=4" }
+      { name: "সুমি আক্তার", img: "https://i.pravatar.cc/150?u=1", viewers: 234, status: "গান গাইছে..." },
+      { name: "নীল আকাশ", img: "https://i.pravatar.cc/150?u=2", viewers: 189, status: "লাইভ কথোপকথন" },
+      { name: "মিষ্টি মেয়ে", img: "https://i.pravatar.cc/150?u=3", viewers: 567, status: "নাচ প্রদর্শনী" },
+      { name: "রাজপুত্র", img: "https://i.pravatar.cc/150?u=4", viewers: 123, status: "গেমিং" },
+      { name: "সোনিয়া খান", img: "https://i.pravatar.cc/150?u=5", viewers: 892, status: "কুকিং শো" },
+      { name: "রাহুল দাস", img: "https://i.pravatar.cc/150?u=6", viewers: 445, status: "টেক টক" }
     ];
 
-    let stream = null;
+    let zp = null;
+    let currentRoomID = null;
 
+    // Initialize Grid
     function init() {
       const grid = document.getElementById('streamGrid');
-      users.forEach(user => {
+      users.forEach((user, index) => {
         const card = document.createElement('div');
         card.className = 'stream-card';
-        card.onclick = () => startCall(user.name);
+        card.onclick = () => joinExistingRoom(user.name);
         card.innerHTML = `
           <div class="video-container">
-            <img src="${user.img}">
+            <img src="${user.img}" alt="${user.name}">
             <div class="live-badge">LIVE</div>
+            <div class="viewers-badge">
+              <span>👁</span>
+              <span>${user.viewers}</span>
+            </div>
             <div class="user-info">
               <div class="username">${user.name}</div>
+              <div class="status">${user.status}</div>
             </div>
           </div>
         `;
@@ -303,50 +442,137 @@
       });
     }
 
-    async function startCall(name = "New Friend") {
-      document.getElementById('callerName').innerText = name;
-      const modal = document.getElementById('videoModal');
-      modal.classList.add('active');
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" },
-          audio: true
-        });
-        
-        document.getElementById('localStream').srcObject = stream;
-        // Mocking remote stream with local for demo
-        document.getElementById('remoteStream').srcObject = stream; 
-      } catch (err) {
-        console.error("Camera Error:", err);
-        alert("ক্যামেরা চালু করা সম্ভব হচ্ছে না। দয়া করে পারমিশন দিন।");
-        endCall();
-      }
+    // Show Room Modal
+    function showRoomModal() {
+      document.getElementById('roomModal').style.display = 'flex';
+      document.getElementById('roomInput').value = '';
+      document.getElementById('roomInput').focus();
     }
 
-    function endCall() {
-      const modal = document.getElementById('videoModal');
-      modal.classList.remove('active');
+    // Close Room Modal
+    function closeRoomModal() {
+      document.getElementById('roomModal').style.display = 'none';
+    }
+
+    // Join Existing Room (Simulation)
+    function joinExistingRoom(hostName) {
+      const roomID = "room_" + Math.floor(Math.random() * 1000);
+      document.getElementById('roomInput').value = roomID;
+      showRoomModal();
+    }
+
+    // Start ZegoCloud Call
+    async function startZegoCall() {
+      const roomID = document.getElementById('roomInput').value || (Math.floor(Math.random() * 10000) + "");
+      currentRoomID = roomID;
       
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      closeRoomModal();
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      
+      try {
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "User_" + userID;
+        
+        // ZegoCloud Credentials - Replace with your own
+        const appID = 1772319407; 
+        const serverSecret = "353697f466f6b8372143a31f9c19d8d9";
+        
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+        zp = ZegoUIKitPrebuilt.create(kitToken);
+        
+        // Hide grid and show video container
+        document.getElementById('streamGrid').style.display = 'none';
+        document.querySelector('.header').style.display = 'none';
+        document.querySelector('.bottom-nav').style.display = 'none';
+        document.getElementById('zego-container').style.display = 'block';
+        document.getElementById('endCallBtn').style.display = 'flex';
+        document.getElementById('loadingOverlay').style.display = 'none';
+
+        zp.joinRoom({
+          container: document.querySelector("#zego-container"),
+          showPreJoinView: true,
+          sharedLinks: [{
+            name: 'কপি লিংক',
+            url: window.location.href.split('?')[0] + '?roomID=' + roomID
+          }],
+          
+          turnOnMicrophoneWhenJoining: true,
+          turnOnCameraWhenJoining: true,
+          showMyCameraToggleButton: true,
+          showMyMicrophoneToggleButton: true,
+          showAudioVideoSettingsButton: true,
+          showScreenSharingButton: true,
+          showTextChat: true,
+          showUserList: true,
+          maxUsers: 50,
+          layout: "Auto",
+          showLayoutButton: true,
+          scenario: {
+            mode: ZegoUIKitPrebuilt.VideoConference,
+            config: {
+              role: "Host",
+            },
+          },
+          onJoinRoom: () => {
+            console.log("Joined room successfully");
+          },
+          onLeaveRoom: () => {
+            endZegoCall();
+          }
+        });
+
+      } catch (error) {
+        console.error("Error starting call:", error);
+        alert("কল শুরু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        document.getElementById('loadingOverlay').style.display = 'none';
+        showHome();
       }
     }
 
-    function toggleMic() {
-      if(stream) {
-        const audio = stream.getAudioTracks()[0];
-        audio.enabled = !audio.enabled;
-        alert(audio.enabled ? "Microphone ON" : "Microphone OFF");
+    // End ZegoCloud Call
+    function endZegoCall() {
+      if (zp) {
+        zp.destroy();
+        zp = null;
       }
+      
+      document.getElementById('zego-container').innerHTML = '';
+      document.getElementById('zego-container').style.display = 'none';
+      document.getElementById('endCallBtn').style.display = 'none';
+      
+      showHome();
     }
 
-    function toggleCam() {
-      // In a real app, logic to switch between front and back camera
-      alert("ক্যামেরা সুইচ হচ্ছে...");
+    // Show Home View
+    function showHome() {
+      document.getElementById('streamGrid').style.display = 'grid';
+      document.querySelector('.header').style.display = 'flex';
+      document.querySelector('.bottom-nav').style.display = 'flex';
+      document.getElementById('zego-container').style.display = 'none';
+      document.getElementById('endCallBtn').style.display = 'none';
+      document.getElementById('loadingOverlay').style.display = 'none';
     }
 
-    init();
+    // Check URL params for room ID
+    window.onload = function() {
+      init();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomID = urlParams.get('roomID');
+      
+      if (roomID) {
+        document.getElementById('roomInput').value = roomID;
+        showRoomModal();
+      }
+    };
+
+    // Close modal on outside click
+    document.getElementById('roomModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeRoomModal();
+      }
+    });
   </script>
 </body>
 </html>
