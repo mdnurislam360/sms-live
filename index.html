@@ -1,578 +1,233 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>View Live - Video Chat</title>
-  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    body {
-      background: #f0f2f5;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+<title>HE Live - Video Chat</title>
 
-    /* Header - Pink Gradient */
-    .header {
-      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 100;
-    }
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:sans-serif;
+}
 
-    .logo {
-      font-size: 22px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      line-height: 1;
-    }
+body{
+  background:#f0f2f5;
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
 
-    .logo span {
-      font-size: 11px;
-      display: block;
-      letter-spacing: 3px;
-      opacity: 0.9;
-      text-transform: uppercase;
-    }
+/* ===== Header ===== */
+.header{
+  background:linear-gradient(135deg,#e91e63,#c2185b);
+  color:#fff;
+  padding:15px;
+  font-weight:bold;
+  text-align:center;
+}
 
-    /* Main Grid */
-    .stream-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      padding: 10px;
-      flex: 1;
-      overflow-y: auto;
-      padding-bottom: 100px;
-    }
+/* ===== Grid ===== */
+.stream-grid{
+  flex:1;
+  overflow:auto;
+  padding:10px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
 
-    .stream-card {
-      position: relative;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      aspect-ratio: 3/4;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
+.card{
+  background:#000;
+  border-radius:12px;
+  position:relative;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  cursor:pointer;
+}
 
-    .stream-card:hover {
-      transform: scale(1.02);
-    }
+.card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-    .video-container {
-      width: 100%;
-      height: 100%;
-    }
+.live{
+  position:absolute;
+  top:6px;
+  left:6px;
+  background:red;
+  color:#fff;
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:4px;
+}
 
-    .video-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+.name{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  color:#fff;
+  padding:6px;
+  font-size:12px;
+  background:linear-gradient(transparent,rgba(0,0,0,.9));
+}
 
-    /* Badges */
-    .live-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: #ff0050;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: bold;
-      animation: flash 1.5s infinite;
-    }
+/* ===== Bottom Button ===== */
+.startBtn{
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+  width:65px;
+  height:65px;
+  border-radius:50%;
+  background:#e91e63;
+  color:#fff;
+  font-size:28px;
+  border:none;
+  cursor:pointer;
+}
 
-    @keyframes flash {
-      50% { opacity: 0.5; }
-    }
+/* ===== Zego container ===== */
+#zego-container{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  background:#000;
+  display:none;
+  z-index:9999;
+}
 
-    .viewers-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* User Info */
-    .user-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 20px 8px 8px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.8));
-      color: white;
-    }
-
-    .username {
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .status {
-      font-size: 10px;
-      opacity: 0.8;
-      margin-top: 2px;
-    }
-
-    /* ZegoCloud Container */
-    #zego-container {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2000;
-      background: #000;
-    }
-
-    /* Custom Controls Overlay */
-    .custom-controls {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      gap: 20px;
-      z-index: 3000;
-    }
-
-    .btn {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s;
-    }
-
-    .btn-end { 
-      background: #ff3b30; 
-      color: white; 
-    }
-    
-    .btn-end:hover {
-      background: #d32f2f;
-      transform: scale(1.1);
-    }
-
-    /* Bottom Nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: white;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0 20px;
-      border-top: 1px solid #ddd;
-      z-index: 100;
-    }
-
-    .nav-item {
-      text-decoration: none;
-      color: #666;
-      font-size: 11px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: color 0.3s;
-    }
-
-    .nav-item:hover {
-      color: #e91e63;
-    }
-
-    .nav-item.active { 
-      color: #e91e63; 
-      font-weight: 600;
-    }
-
-    .center-btn {
-      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
-      color: white;
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      margin-top: -25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
-      cursor: pointer;
-      border: 3px solid white;
-      transition: transform 0.3s;
-    }
-
-    .center-btn:hover {
-      transform: scale(1.1);
-    }
-
-    /* Loading Overlay */
-    .loading-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 2500;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-    }
-
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top: 4px solid #e91e63;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Room Input Modal */
-    .room-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 1500;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .room-modal-content {
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    .room-input {
-      width: 100%;
-      padding: 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 16px;
-      margin: 20px 0;
-      text-align: center;
-    }
-
-    .room-input:focus {
-      outline: none;
-      border-color: #e91e63;
-    }
-
-    .join-btn {
-      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
-      color: white;
-      border: none;
-      padding: 15px 40px;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: transform 0.2s;
-    }
-
-    .join-btn:hover {
-      transform: scale(1.02);
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      font-size: 20px;
-      cursor: pointer;
-      z-index: 3001;
-    }
-  </style>
+/* ===== End button ===== */
+.endBtn{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  background:red;
+  color:#fff;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  border:none;
+  font-size:22px;
+  display:none;
+  z-index:10000;
+}
+</style>
 </head>
+
 <body>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">
-        View Live
-        <span>Broadcast Yourself</span>
-      </div>
-    </div>
-    <div style="font-size: 20px; cursor: pointer;">🔔</div>
-  </div>
+<div class="header">HE Live</div>
 
-  <!-- Main Grid -->
-  <div class="stream-grid" id="streamGrid">
-    <!-- Dynamic content will be loaded here -->
-  </div>
+<div class="stream-grid" id="grid"></div>
 
-  <!-- Bottom Navigation -->
-  <div class="bottom-nav">
-    <a href="#" class="nav-item active" onclick="showHome()">
-      <span style="font-size: 20px;">🏠</span>
-      <span>হোম</span>
-    </a>
-    <div class="center-btn" onclick="showRoomModal()" title="নতুন কল শুরু করুন">📹</div>
-    <a href="#" class="nav-item">
-      <span style="font-size: 20px;">👤</span>
-      <span>প্রোফাইল</span>
-    </a>
-  </div>
+<button class="startBtn" onclick="startCall()">📹</button>
 
-  <!-- Room Input Modal -->
-  <div class="room-modal" id="roomModal">
-    <div class="room-modal-content">
-      <h3 style="color: #e91e63; margin-bottom: 10px;">ভিডিও চ্যাটে যোগ দিন</h3>
-      <p style="color: #666; margin-bottom: 20px;">রুম আইডি দিন বা নতুন তৈরি করুন</p>
-      <input type="text" class="room-input" id="roomInput" placeholder="রুম আইডি (ঐচ্ছিক)">
-      <button class="join-btn" onclick="startZegoCall()">কল শুরু করুন</button>
-      <button style="margin-top: 10px; background: none; border: none; color: #666; cursor: pointer;" onclick="closeRoomModal()">বাতিল</button>
-    </div>
-  </div>
+<div id="zego-container"></div>
 
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <p>কানেক্ট হচ্ছে...</p>
-  </div>
+<button class="endBtn" id="endBtn" onclick="endCall()">❌</button>
 
-  <!-- ZegoCloud Video Container -->
-  <div id="zego-container"></div>
 
-  <!-- End Call Button (Floating) -->
-  <button class="btn btn-end" id="endCallBtn" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 3000;" onclick="endZegoCall()">
-    📞
-  </button>
+<script>
+/* ===== Sample users ===== */
+const users=[
+  {name:"Sumi",img:"https://i.pravatar.cc/300?1"},
+  {name:"Rahim",img:"https://i.pravatar.cc/300?2"},
+  {name:"Nila",img:"https://i.pravatar.cc/300?3"},
+  {name:"Rafi",img:"https://i.pravatar.cc/300?4"},
+  {name:"Sonia",img:"https://i.pravatar.cc/300?5"},
+  {name:"Tanvir",img:"https://i.pravatar.cc/300?6"}
+];
 
-  <script>
-    // Sample Users Data
-    const users = [
-      { name: "সুমি আক্তার", img: "https://i.pravatar.cc/150?u=1", viewers: 234, status: "গান গাইছে..." },
-      { name: "নীল আকাশ", img: "https://i.pravatar.cc/150?u=2", viewers: 189, status: "লাইভ কথোপকথন" },
-      { name: "মিষ্টি মেয়ে", img: "https://i.pravatar.cc/150?u=3", viewers: 567, status: "নাচ প্রদর্শনী" },
-      { name: "রাজপুত্র", img: "https://i.pravatar.cc/150?u=4", viewers: 123, status: "গেমিং" },
-      { name: "সোনিয়া খান", img: "https://i.pravatar.cc/150?u=5", viewers: 892, status: "কুকিং শো" },
-      { name: "রাহুল দাস", img: "https://i.pravatar.cc/150?u=6", viewers: 445, status: "টেক টক" }
-    ];
+const grid=document.getElementById("grid");
 
-    let zp = null;
-    let currentRoomID = null;
+users.forEach(u=>{
+  const d=document.createElement("div");
+  d.className="card";
+  d.innerHTML=`
+    <img src="${u.img}">
+    <div class="live">LIVE</div>
+    <div class="name">${u.name}</div>
+  `;
+  d.onclick=startCall;
+  grid.appendChild(d);
+});
 
-    // Initialize Grid
-    function init() {
-      const grid = document.getElementById('streamGrid');
-      users.forEach((user, index) => {
-        const card = document.createElement('div');
-        card.className = 'stream-card';
-        card.onclick = () => joinExistingRoom(user.name);
-        card.innerHTML = `
-          <div class="video-container">
-            <img src="${user.img}" alt="${user.name}">
-            <div class="live-badge">LIVE</div>
-            <div class="viewers-badge">
-              <span>👁</span>
-              <span>${user.viewers}</span>
-            </div>
-            <div class="user-info">
-              <div class="username">${user.name}</div>
-              <div class="status">${user.status}</div>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
 
-    // Show Room Modal
-    function showRoomModal() {
-      document.getElementById('roomModal').style.display = 'flex';
-      document.getElementById('roomInput').value = '';
-      document.getElementById('roomInput').focus();
-    }
+/* ===== Zego Config ===== */
+const appID=1772319407;
+const serverSecret="353697f466f6b8372143a31f9c19d8d9";
 
-    // Close Room Modal
-    function closeRoomModal() {
-      document.getElementById('roomModal').style.display = 'none';
-    }
+let zp=null;
 
-    // Join Existing Room (Simulation)
-    function joinExistingRoom(hostName) {
-      const roomID = "room_" + Math.floor(Math.random() * 1000);
-      document.getElementById('roomInput').value = roomID;
-      showRoomModal();
-    }
+function randomID(){
+  return Math.floor(Math.random()*100000)+"";
+}
 
-    // Start ZegoCloud Call
-    async function startZegoCall() {
-      const roomID = document.getElementById('roomInput').value || (Math.floor(Math.random() * 10000) + "");
-      currentRoomID = roomID;
-      
-      closeRoomModal();
-      document.getElementById('loadingOverlay').style.display = 'flex';
-      
-      try {
-        const userID = Math.floor(Math.random() * 10000) + "";
-        const userName = "User_" + userID;
-        
-        // ZegoCloud Credentials - Replace with your own
-        const appID = 1772319407; 
-        const serverSecret = "353697f466f6b8372143a31f9c19d8d9";
-        
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+/* ===== Start Call ===== */
+async function startCall(){
 
-        zp = ZegoUIKitPrebuilt.create(kitToken);
-        
-        // Hide grid and show video container
-        document.getElementById('streamGrid').style.display = 'none';
-        document.querySelector('.header').style.display = 'none';
-        document.querySelector('.bottom-nav').style.display = 'none';
-        document.getElementById('zego-container').style.display = 'block';
-        document.getElementById('endCallBtn').style.display = 'flex';
-        document.getElementById('loadingOverlay').style.display = 'none';
+  const roomID=randomID();
+  const userID=randomID();
+  const userName="User_"+userID;
 
-        zp.joinRoom({
-          container: document.querySelector("#zego-container"),
-          showPreJoinView: true,
-          sharedLinks: [{
-            name: 'কপি লিংক',
-            url: window.location.href.split('?')[0] + '?roomID=' + roomID
-          }],
-          
-          turnOnMicrophoneWhenJoining: true,
-          turnOnCameraWhenJoining: true,
-          showMyCameraToggleButton: true,
-          showMyMicrophoneToggleButton: true,
-          showAudioVideoSettingsButton: true,
-          showScreenSharingButton: true,
-          showTextChat: true,
-          showUserList: true,
-          maxUsers: 50,
-          layout: "Auto",
-          showLayoutButton: true,
-          scenario: {
-            mode: ZegoUIKitPrebuilt.VideoConference,
-            config: {
-              role: "Host",
-            },
-          },
-          onJoinRoom: () => {
-            console.log("Joined room successfully");
-          },
-          onLeaveRoom: () => {
-            endZegoCall();
-          }
-        });
+  const token=
+    ZegoUIKitPrebuilt.generateKitTokenForTest(
+      appID,
+      serverSecret,
+      roomID,
+      userID,
+      userName
+    );
 
-      } catch (error) {
-        console.error("Error starting call:", error);
-        alert("কল শুরু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-        document.getElementById('loadingOverlay').style.display = 'none';
-        showHome();
-      }
-    }
+  zp=ZegoUIKitPrebuilt.create(token);
 
-    // End ZegoCloud Call
-    function endZegoCall() {
-      if (zp) {
-        zp.destroy();
-        zp = null;
-      }
-      
-      document.getElementById('zego-container').innerHTML = '';
-      document.getElementById('zego-container').style.display = 'none';
-      document.getElementById('endCallBtn').style.display = 'none';
-      
-      showHome();
-    }
+  document.getElementById("grid").style.display="none";
+  document.querySelector(".header").style.display="none";
+  document.querySelector(".startBtn").style.display="none";
 
-    // Show Home View
-    function showHome() {
-      document.getElementById('streamGrid').style.display = 'grid';
-      document.querySelector('.header').style.display = 'flex';
-      document.querySelector('.bottom-nav').style.display = 'flex';
-      document.getElementById('zego-container').style.display = 'none';
-      document.getElementById('endCallBtn').style.display = 'none';
-      document.getElementById('loadingOverlay').style.display = 'none';
-    }
+  document.getElementById("zego-container").style.display="block";
+  document.getElementById("endBtn").style.display="block";
 
-    // Check URL params for room ID
-    window.onload = function() {
-      init();
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const roomID = urlParams.get('roomID');
-      
-      if (roomID) {
-        document.getElementById('roomInput').value = roomID;
-        showRoomModal();
-      }
-    };
+  zp.joinRoom({
+    container:document.getElementById("zego-container"),
 
-    // Close modal on outside click
-    document.getElementById('roomModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeRoomModal();
-      }
-    });
-  </script>
+    scenario:{
+      mode:ZegoUIKitPrebuilt.VideoConference
+    },
+
+    turnOnCameraWhenJoining:true,
+    turnOnMicrophoneWhenJoining:true,
+    showTextChat:true,
+    showUserList:true
+  });
+}
+
+/* ===== End Call ===== */
+function endCall(){
+  if(zp){
+    zp.destroy();
+    zp=null;
+  }
+
+  document.getElementById("grid").style.display="grid";
+  document.querySelector(".header").style.display="block";
+  document.querySelector(".startBtn").style.display="block";
+
+  document.getElementById("zego-container").style.display="none";
+  document.getElementById("endBtn").style.display="none";
+}
+</script>
+
 </body>
 </html>
