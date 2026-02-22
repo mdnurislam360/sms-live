@@ -1,218 +1,661 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HE Live Streaming</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title> Live - Video Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
 
-<style>
-/* ======================
-   Base Layout
-====================== */
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    background:#0f172a;
-    font-family:sans-serif;
-}
+    body {
+      background: #f0f2f5;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-#root{
-    width:100vw;
-    height:100vh;
-    position:relative;
-}
+    /* Header - Pink Gradient */
+    .header {
+      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-/* ======================
-   👁 Viewer Counter UI (Right)
-====================== */
-#coin-system{
-    position:absolute;
-    top:8px;
-    right:8px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:5px 10px;
-    background:rgba(0,0,0,.65);
-    border-radius:18px;
-    color:#fff;
-    z-index:9999;
-}
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
 
-/* small eye icon */
-.eye-container{
-    width:20px;
-    height:12px;
-    background:#fff;
-    border:2px solid #FFAB40;
-    border-radius:100% 0%;
-    transform:rotate(45deg);
-    position:relative;
-    overflow:hidden;
-}
+    .menu-btn {
+      font-size: 24px;
+      cursor: pointer;
+    }
 
-/* iris */
-.iris{
-    width:8px;
-    height:8px;
-    background:#29B6F6;
-    border-radius:50%;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%) rotate(-45deg);
-}
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
 
-/* pupil */
-.pupil{
-    width:4px;
-    height:4px;
-    background:#0d1117;
-    border-radius:50%;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-}
+    .logo span {
+      font-size: 10px;
+      display: block;
+      letter-spacing: 3px;
+      opacity: 0.9;
+    }
 
-/* number bigger */
-#coin-count{
-    font-size:16px;
-    font-weight:bold;
-}
+    .notification-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      position: relative;
+    }
 
-/* ======================
-   💎 Diamond Counter UI (Left)
-====================== */
-#diamond-system{
-    position:absolute;
-    top:8px;
-    left:8px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    padding:5px 10px;
-    background:rgba(0,0,0,.65);
-    border-radius:18px;
-    color:#fff;
-    z-index:9999;
-    font-weight:bold;
-    font-size:16px;
-}
+    .notification-btn::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: #ffeb3b;
+      border-radius: 50%;
+    }
 
-#diamond-icon{
-    width:20px;
-    height:20px;
-    background: linear-gradient(45deg, #00f, #0ff);
-    clip-path: polygon(
-        50% 0%, 61% 35%, 98% 35%, 68% 57%, 
-        79% 91%, 50% 70%, 21% 91%, 32% 57%, 
-        2% 35%, 39% 35%
-    );
-}
-</style>
+    /* Main Grid */
+    .stream-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 8px;
+      height: calc(100vh - 140px);
+      overflow-y: auto;
+    }
+
+    .stream-card {
+      position: relative;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .stream-card:hover {
+      transform: scale(0.98);
+    }
+
+    /* Video Placeholder */
+    .video-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: linear-gradient(45deg, #1a1a2e, #16213e);
+    }
+
+    .video-container video,
+    .video-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Live Badge */
+    .live-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: linear-gradient(135deg, #9c27b0, #e91e63);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Viewer Count */
+    .viewer-count {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(233, 30, 99, 0.9);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    /* User Info */
+    .user-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 10px 10px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #ffd700;
+      object-fit: cover;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .username {
+      color: #ffd700;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .badge-vip {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      color: #333;
+    }
+
+    .badge-op {
+      background: #000;
+      color: #fff;
+      border: 1px solid #fff;
+    }
+
+    .country-flag {
+      font-size: 11px;
+      color: #ccc;
+    }
+
+    /* Floating Hearts */
+    .floating-hearts {
+      position: absolute;
+      right: 10px;
+      bottom: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      pointer-events: none;
+    }
+
+    .heart {
+      font-size: 20px;
+      animation: floatUp 3s ease-in infinite;
+      opacity: 0;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      color: #666;
+      text-decoration: none;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .nav-item.active {
+      color: #e91e63;
+    }
+
+    .nav-item i {
+      font-size: 24px;
+    }
+
+    .go-live-btn {
+      background: linear-gradient(135deg, #e91e63, #c2185b);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: -20px;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+      animation: glow 2s infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4); }
+      50% { box-shadow: 0 4px 25px rgba(233, 30, 99, 0.8); }
+    }
+
+    /* Modal for Video Chat */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-header {
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .modal-video {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .main-video {
+      flex: 2;
+      background: #222;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .self-video {
+      flex: 1;
+      background: #333;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .self-video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .chat-overlay {
+      position: absolute;
+      bottom: 80px;
+      left: 10px;
+      right: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .chat-bubble {
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 15px;
+      margin-bottom: 5px;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-bubble .user {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .modal-controls {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .control-btn.end {
+      background: #f44336;
+      color: white;
+    }
+
+    .control-btn.mute {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    .control-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Gift Animation */
+    .gift-animation {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 60px;
+      animation: giftPop 1s ease-out;
+      pointer-events: none;
+      z-index: 2000;
+    }
+
+    @keyframes giftPop {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      50% { transform: translate(-50%, -50%) scale(1.5); }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- Zego Live container -->
-<div id="root"></div>
-
-<!-- 👁 Viewer Counter (Right) -->
-<div id="coin-system">
-    <div class="eye-container">
-        <div class="iris">
-            <div class="pupil"></div>
-        </div>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="menu-btn">☰</div>
+      <div class="logo">
+        AR
+        <span>Live</span>
+      </div>
     </div>
-    <span id="coin-count">0</span>
-</div>
+    <button class="notification-btn">🔔</button>
+  </div>
 
-<!-- 💎 Diamond Counter (Left) -->
-<div id="diamond-system">
-    <div id="diamond-icon"></div>
-    <span id="diamond-count">50000</span>
-</div>
+  <!-- Stream Grid -->
+  <div class="stream-grid" id="streamGrid">
+    <!-- Streams will be generated by JavaScript -->
+  </div>
 
-<!-- ======================
-     Zego SDK
-====================== -->
-<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="#" class="nav-item active">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="#" class="nav-item go-live-btn" onclick="startBroadcast()">
+      <span>📹</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span>👤</span>
+      <span>Profile</span>
+    </a>
+  </div>
 
-<script>
-/* ======================
-   Zego Setup
-====================== */
-const roomID = "room1";
+  <!-- Video Chat Modal -->
+  <div class="modal" id="videoModal">
+    <div class="modal-header">
+      <h3>🔴 Live Chat</h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:white;font-size:24px;">✕</button>
+    </div>
+    
+    <div class="modal-video">
+      <div class="main-video" id="remoteVideo">
+        <video autoplay playsinline id="remoteStream"></video>
+        <div class="chat-overlay" id="chatOverlay"></div>
+      </div>
+      <div class="self-video">
+        <video autoplay playsinline muted id="localStream"></video>
+      </div>
+    </div>
 
-const userID = "user_" + Math.floor(Math.random()*10000);
-const userName = "User" + userID;
+    <div class="modal-controls">
+      <button class="control-btn mute" onclick="toggleMute()">🎤</button>
+      <button class="control-btn end" onclick="closeModal()">📞</button>
+      <button class="control-btn mute" onclick="sendGift()">🎁</button>
+    </div>
+  </div>
 
-const appID = 480055648;
-const serverSecret = "a341f27a11c9af1547c670c09b6df111";
+  <script>
+    // Sample data for streams
+    const streams = [
+      { name: "লাল গোলাপ", viewers: 7, vip: true, country: "🇧🇩", image: "https://i.pravatar.cc/300?img=1" },
+      { name: "[OP] Neha", viewers: 2, op: true, country: "🇮🇳", image: "https://i.pravatar.cc/300?img=5" },
+      { name: "সুমি আক্তার", viewers: 2, vip: false, country: "🇧🇩", image: "https://i.pravatar.cc/300?img=9" },
+      { name: "Riya Sharma", viewers: 1, vip: true, country: "🇮🇳", image: "https://i.pravatar.cc/300?img=10" },
+      { name: "Beauty Queen", viewers: 15, vip: true, country: "🇵🇰", image: "https://i.pravatar.cc/300?img=15" },
+      { name: "Sweet Girl", viewers: 3, op: true, country: "🇧🇩", image: "https://i.pravatar.cc/300?img=20" }
+    ];
 
-const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-    appID,
-    serverSecret,
-    roomID,
-    userID,
-    userName
-);
+    let localStream = null;
+    let isMuted = false;
 
-const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-zp.joinRoom({
-    container: document.querySelector("#root"),
-    showPreJoinView:false,
-    scenario:{
-        mode: ZegoUIKitPrebuilt.LiveStreaming,
-        config:{
-            role: ZegoUIKitPrebuilt.Host
-        }
-    },
-    onLiveStart:()=>{
-        startViewerSystem();
+    // Initialize grid
+    function initGrid() {
+      const grid = document.getElementById('streamGrid');
+      streams.forEach((stream, index) => {
+        const card = createStreamCard(stream, index);
+        grid.appendChild(card);
+      });
     }
-});
 
-/* ======================
-   Smart Speed Viewer System
-====================== */
-let viewers = 0;
+    function createStreamCard(stream, index) {
+      const div = document.createElement('div');
+      div.className = 'stream-card';
+      div.onclick = () => joinStream(index);
+      
+      div.innerHTML = `
+        <div class="video-container">
+          <img src="${stream.image}" alt="${stream.name}">
+          <div class="live-badge">
+            <span>●</span> LIVE
+          </div>
+          <div class="viewer-count">
+            <span>👁</span> ${stream.viewers}
+          </div>
+          <div class="floating-hearts">
+            <span class="heart">💕</span>
+            <span class="heart" style="animation-delay:0.5s">😍</span>
+            <span class="heart" style="animation-delay:1s">🥰</span>
+          </div>
+          <div class="user-info">
+            <img src="${stream.image}" class="user-avatar">
+            <div class="user-details">
+              <div class="username">
+                ${stream.vip ? '<span class="badge badge-vip">VIP</span>' : ''}
+                ${stream.op ? '<span class="badge badge-op">OP</span>' : ''}
+                ${stream.name}
+              </div>
+              <div class="country-flag">${stream.country}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      return div;
+    }
 
-function updateViewer(){
-    document.getElementById("coin-count").innerText = viewers;
-}
+    // Join stream
+    async function joinStream(index) {
+      const modal = document.getElementById('videoModal');
+      modal.classList.add('active');
+      
+      try {
+        // Get local video
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: true 
+        });
+        
+        const localVideo = document.getElementById('localStream');
+        localVideo.srcObject = localStream;
+        
+        // Simulate remote stream (in real app, this would be WebRTC)
+        const remoteVideo = document.getElementById('remoteStream');
+        remoteVideo.srcObject = localStream; // Mirror for demo
+        
+        // Add chat messages
+        simulateChat();
+        
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('ক্যামেরা অ্যাক্সেস করতে সমস্যা হচ্ছে!');
+      }
+    }
 
-function startViewerSystem(){
-    // 10s → +1
-    setTimeout(()=>{
-        viewers += 1;
-        updateViewer();
-    },10000);
+    // Start broadcast
+    async function startBroadcast() {
+      const modal = document.getElementById('videoModal');
+      modal.classList.add('active');
+      
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: true 
+        });
+        
+        const localVideo = document.getElementById('localStream');
+        localVideo.srcObject = localStream;
+        
+        // Hide remote video for broadcaster
+        document.getElementById('remoteVideo').style.display = 'none';
+        
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('ক্যামেরা অ্যাক্সেস করতে সমস্যা হচ্ছে!');
+      }
+    }
 
-    // 30s → +2
-    setTimeout(()=>{
-        viewers += 2;
-        updateViewer();
-    },30000);
+    function closeModal() {
+      const modal = document.getElementById('videoModal');
+      modal.classList.remove('active');
+      
+      // Stop all tracks
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      
+      document.getElementById('remoteVideo').style.display = 'flex';
+    }
 
-    // 60s → +3
-    setTimeout(()=>{
-        viewers += 3;
-        updateViewer();
+    function toggleMute() {
+      if (localStream) {
+        const audioTrack = localStream.getAudioTracks()[0];
+        if (audioTrack) {
+          audioTrack.enabled = !audioTrack.enabled;
+          isMuted = !isMuted;
+          event.target.textContent = isMuted ? '🔇' : '🎤';
+        }
+      }
+    }
 
-        // তারপর প্রতি 60s → +1
-        setInterval(()=>{
-            viewers += 1;
-            updateViewer();
-        },60000);
+    function sendGift() {
+      const gifts = ['🎁', '💎', '👑', '💐', '🧸'];
+      const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
+      
+      const div = document.createElement('div');
+      div.className = 'gift-animation';
+      div.textContent = randomGift;
+      document.body.appendChild(div);
+      
+      setTimeout(() => div.remove(), 1000);
+    }
 
-    },60000);
-}
-</script>
+    function simulateChat() {
+      const chatOverlay = document.getElementById('chatOverlay');
+      const messages = [
+        { user: 'User123', text: 'হ্যালো! কেমন আছেন?' },
+        { user: 'Rahim', text: 'আপনাকে দেখতে সুন্দর লাগছে 😍' },
+        { user: 'SweetGirl', text: 'থ্যাংক ইউ সো মাচ 🥰' }
+      ];
+      
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i >= messages.length) {
+          clearInterval(interval);
+          return;
+        }
+        
+        const msg = document.createElement('div');
+        msg.className = 'chat-bubble';
+        msg.innerHTML = `<span class="user">${messages[i].user}:</span> ${messages[i].text}`;
+        chatOverlay.appendChild(msg);
+        chatOverlay.scrollTop = chatOverlay.scrollHeight;
+        i++;
+      }, 1500);
+    }
+
+    // Initialize
+    initGrid();
+  </script>
 
 </body>
 </html>
