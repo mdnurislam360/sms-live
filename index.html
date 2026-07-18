@@ -1,68 +1,63 @@
+<script src="https://unpkg.com/zego-express-engine-webrtc@3.0.0/index.js"></script>
 <script>
-const appID = 1772319407;
-const serverSecret = "353697f466f6b8372143a31f9c19d8d9";
+// আপনার ZegoCloud অ্যাকাউন্ট থেকে সঠিক App ID এবং Server Secret এখানে বসাবেন
+const appID = 1772319407; 
+const serverSecret = "353697f466f6b8372143a31f9c19d8d9"; // উদাহরণস্বরূপ
 
-let zp=null;
+let zp = null;
 
-function randomID(){
-  return Math.floor(Math.random()*100000)+"";
+function randomID() {
+    return Math.floor(Math.random() * 100000) + "";
 }
 
-async function startZegoCall(){
+async function startZegoCall() {
+    const roomID = document.getElementById("roomInput").value || randomID();
+    const userID = randomID();
+    const userName = "User_" + userID;
 
-  const roomID =
-    document.getElementById("roomInput").value || randomID();
+    // লোডিং স্ক্রিন দেখানো
+    document.getElementById("loadingOverlay").style.display = "flex";
 
-  const userID = randomID();
-  const userName = "User_"+userID;
+    try {
+        // টোকেন জেনারেট করা
+        const token = ZegoUIKitSignaling.generateTokenForKit(
+            appID,
+            serverSecret,
+            roomID,
+            userID,
+            userName
+        );
 
-  closeRoomModal();
-  document.getElementById("loadingOverlay").style.display="flex";
+        // ফুল স্ক্রিন কন্টেইনার দেখানো
+        document.getElementById("zego-container").style.display = "block";
+        document.getElementById("streamUi").style.display = "none";
+        document.getElementById("main").style.display = "none";
+        document.getElementById("bottom-nav").style.display = "none";
 
-  try{
+        // Zego Express Engine ইনিশিয়ালাইজ করা
+        const zg = new ZegoExpressEngine(appID, serverSecret);
 
-    const token =
-      ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-      );
+        // রুমে জয়েন করা
+        await zg.loginRoom(roomID, token, { userID, userName }, { maxUserCount: 4 });
+        
+        // লোডিং বন্ধ করা
+        document.getElementById("loadingOverlay").style.display = "none";
 
-    zp = ZegoUIKitPrebuilt.create(token);
+        // কল স্ক্রিন লাইভ করার কোড
+        console.log("GitHub Pages-এ সফলভাবে কানেক্ট হয়েছে!");
 
-    // show full screen
-    document.getElementById("zego-container").style.display="block";
-    document.getElementById("streamGrid").style.display="none";
-    document.querySelector(".header").style.display="none";
-    document.querySelector(".bottom-nav").style.display="none";
-    document.getElementById("loadingOverlay").style.display="none";
-
-    await zp.joinRoom({
-      container: document.getElementById("zego-container"),
-
-      scenario:{
-        mode: ZegoUIKitPrebuilt.OneONoneCall   // GitHub এ বেশি stable
-      },
-
-      turnOnCameraWhenJoining:true,
-      turnOnMicrophoneWhenJoining:true,
-      showTextChat:true,
-      showUserList:true
-    });
-
-  }catch(e){
-    alert("Join fail ❌");
-    console.log(e);
-  }
+    } catch (err) {
+        document.getElementById("loadingOverlay").style.display = "none";
+        alert("কানেক্ট হতে ব্যর্থ হয়েছে! আবার চেষ্টা করুন।");
+        console.error(err);
+    }
 }
 
-function endZegoCall(){
-  if(zp){
-    zp.destroy();
-    zp=null;
-  }
-  showHome();
+function endPageCall() {
+    if (zp) {
+        zp.destroy();
+        zp = null;
+    }
+    window.location.reload();
 }
 </script>
